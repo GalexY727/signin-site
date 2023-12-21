@@ -1,38 +1,95 @@
-.App {
-  text-align: center;
+.login { 
+	position: absolute;
+	top: 30%;
+	left: 50%;
+	margin: -150px 0 0 -150px;
+	width:300px;
+	height:300px;
+	cursor: default;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.login h1 { color: #fff; text-shadow: 0 0 10px rgba(0,0,0,0.3); letter-spacing:1px; text-align:center; }
+
+input { 
+	width: 100%; 
+	margin-bottom: 10px; 
+	background: rgba(0,0,0,0.3);
+	border: none;
+	outline: none;
+	padding: 10px;
+	font-size: 13px;
+	color: #fff;
+	text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+	border: 1px solid rgba(0,0,0,0.3);
+	border-radius: 4px;
+	box-shadow: inset 0 -5px 45px rgba(100,100,100,0.2), 0 1px 1px rgba(255,255,255,0.2);
+	-webkit-transition: box-shadow .5s ease;
+	-moz-transition: box-shadow .5s ease;
+	-o-transition: box-shadow .5s ease;
+	-ms-transition: box-shadow .5s ease;
+	transition: box-shadow .5s ease;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.form {
+	cursor: text;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgba(255,255,255,0.2); }
+
+.name {
+	padding-top: 1vh;
+	padding-bottom: 1vh;
 }
 
-.App-link {
-  color: #61dafb;
+.name:hover {
+	color: rgba(255, 255, 255, 0.34) !important;
+	text-decoration: line-through;
+	cursor: pointer;
+	
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.students {
+  position:absolute;
+  top: 30%;
+  padding-left: 2vw;
+  font-size: 1.5rem;
+  width: 60%;
+  cursor: default;
+}
+
+.mentors {
+	--left: 60%;
+	position:absolute;
+	top: 30%;
+	left: var(--left);
+	padding-left: 2vw;
+	font-size: 1.5rem;
+	width: calc(100% - var(--left));
+	cursor: default;
+}
+
+.rainbow-text {
+	background: 
+		linear-gradient(
+			to right,
+			rgba(255,0,0,1) 0%,
+			rgba(255,154,0,1) 10%,
+			rgba(208,222,33,1) 20%,
+			rgba(79,220,74,1) 30%,
+			rgba(63,105,216,1) 40%,
+			rgba(47,150,226,1) 50%,
+			rgba(28,127,238,1) 60%,
+			rgba(95,21,242,1) 70%,
+			rgba(186,12,248,1) 80%,
+			rgba(251,7,217,1) 90%,
+			rgba(255,0,0,1) 100%) 
+			0 0/200% 100%;
+	animation: rainbow 5s linear infinite;
+	-webkit-text-fill-color: transparent;
+	-webkit-background-clip: text;
+	background-clip: text;
+}
+
+@keyframes rainbow {
+	to {background-position: -200% 0}
 }
