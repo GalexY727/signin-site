@@ -2,15 +2,14 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import { useState, useRef } from 'react';
-import {Row, Col} from "react-bootstrap"
 import whitelist from './whitelist';
 
 function App() {
   
   const scriptUrl = "https://script.google.com/macros/s/AKfycbxgDAO5EbVXVcRjcWpX4Akv9IIWN5gYImOxBUg3naqJ-3_iXU7ra05Z01iXvlRpgJ8/exec"
-
+  const sheetID = "https://sheets.googleapis.com/v4/spreadsheets/1ulwe7y6T8UmQq_ItNZGkrwVdd4wi47h5RS_Wlexn32o/values/CurrentlySignedIn!A2:A";
+  
   const [names, setNames] = useState([]);
-  const [gradient, setGradient] = useState(false);
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -21,8 +20,8 @@ function App() {
       (input.split(' ').length > 1) 
         ? (input.split(' ')[0] + ' ' + input.split(' ')[1].charAt(0)).toLowerCase() 
         : input.toLowerCase();
-    
-    if (names.includes(equalityName) || !whitelist[1].includes(equalityName)) {
+
+    if (!whitelist[1].includes(equalityName) || names.includes(whitelist[0][whitelist[1].indexOf(equalityName)])) {
       ref.animate(
         [ { transform: "translate(1px, 1px) rotate(0deg)", },
           { transform: "translate(-1px, -2px) rotate(-1deg)" },
@@ -43,7 +42,6 @@ function App() {
         });
       return
     }
-    gradient ? setGradient(false) : setGradient(true);
     let realName = whitelist[0][whitelist[1].indexOf(equalityName)]
     setNames([...names, realName])
     checkIn(realName);
@@ -58,13 +56,14 @@ function App() {
     e.preventDefault();
     let name = e.target.innerHTML;
     checkOut(capitalizeEachWord(name));
-    setNames(names.filter((el) => el != name));
+    setNames(names.filter((el) => el !== name));
   }
 
   const checkIn = async (name) => {
     const data = [
       ['name', name],
-      ['timestamp', Date.now()],
+      ['timestamp', Date.now() - 28800000], // Convert to PST from UTC
+      ['inOrOut', 'In']
     ]
     post(data);
   }
@@ -72,7 +71,8 @@ function App() {
   const checkOut = async (name) => {
       const data = [
         ['name', name],
-        ['timestamp', Date.now()],
+        ['timestamp', Date.now() - 28800000], // Convert to PST from UTC
+        ['inOrOut', 'Out']
       ]
       post(data);
   }
