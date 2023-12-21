@@ -2,26 +2,31 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import { useState, useRef } from 'react';
-import whitelist from './whitelist';
+import studentWhitelist from './studentWhitelist';
+import parentWhitelist from './parentWhitelist';
 
 function App() {
   
   const scriptUrl = "https://script.google.com/macros/s/AKfycbxgDAO5EbVXVcRjcWpX4Akv9IIWN5gYImOxBUg3naqJ-3_iXU7ra05Z01iXvlRpgJ8/exec"
   const sheetID = "https://sheets.googleapis.com/v4/spreadsheets/1ulwe7y6T8UmQq_ItNZGkrwVdd4wi47h5RS_Wlexn32o/values/CurrentlySignedIn!A2:A";
   
-  const [names, setNames] = useState([]);
+  const [studentNames, setStudentNames] = useState([]);
+  const [parentNames, setParentNames] = useState([]);
 
   const onSubmit = (e) => {
     e.preventDefault();
     
     const ref = inputRef.current;
-    let input = ref.value.toLowerCase();
+    let input = ref.value.trim().toLowerCase();
     let equalityName = 
       (input.split(' ').length > 1) 
         ? (input.split(' ')[0] + ' ' + input.split(' ')[1].charAt(0)).toLowerCase() 
         : input.toLowerCase();
-
-    if (!whitelist[1].includes(equalityName) || names.includes(whitelist[0][whitelist[1].indexOf(equalityName)])) {
+    if ((!studentWhitelist[1].includes(equalityName) &&
+          !parentWhitelist[1].includes(equalityName)) ||
+        studentNames.includes(studentWhitelist[0][studentWhitelist[1].indexOf(equalityName)]) ||
+        parentNames.includes(parentWhitelist[0][parentWhitelist[1].indexOf(equalityName)])) 
+      {
       ref.animate(
         [ { transform: "translate(1px, 1px) rotate(0deg)", },
           { transform: "translate(-1px, -2px) rotate(-1deg)" },
@@ -42,8 +47,15 @@ function App() {
         });
       return
     }
-    let realName = whitelist[0][whitelist[1].indexOf(equalityName)]
-    setNames([...names, realName])
+    // Check if parent
+    let realName;
+    if (parentWhitelist[1].includes(equalityName)) {
+      realName = parentWhitelist[0][parentWhitelist[1].indexOf(equalityName)]
+      setParentNames([...parentNames, realName])
+    } else {
+      realName = studentWhitelist[0][studentWhitelist[1].indexOf(equalityName)]
+      setStudentNames([...studentNames, realName])
+    }
     checkIn(realName);
     inputRef.current.value = ""
   }
@@ -56,7 +68,12 @@ function App() {
     e.preventDefault();
     let name = e.target.innerHTML;
     checkOut(capitalizeEachWord(name));
-    setNames(names.filter((el) => el !== name));
+    
+    if (studentNames.includes(name)) {
+      setStudentNames(studentNames.filter((el) => el !== name));
+    } else {
+      setParentNames(parentNames.filter((el) => el !== name));
+    }
   }
 
   const checkIn = async (name) => {
@@ -100,16 +117,31 @@ function App() {
             <input ref={inputRef} type="text" name="u" placeholder="Enter your name" className='form' required="required" />
           </form>
       </div>
-      <div className='names d-flex flex-wrap'>
-        {
-          names.map(
-            (name) => 
-              <div className='px-3 text-nowrap text-light name' key={name} onClick={removeName}>
-                {name}
-              </div>
-            )
-        }
+      <div className='px-3 text-center text-light students'>Students
+        <div className='names d-flex flex-wrap'>
+          {
+            studentNames.map(
+              (name) => 
+                <div className='px-3 text-nowrap text-light name' key={name} onClick={removeName}>
+                  {name}
+                </div>
+              )
+          }
+        </div>
       </div>
+      <div className='px-3 text-center text-light mentors'>Parents
+        <div className='names d-flex flex-wrap'>
+          {
+            parentNames.map(
+              (name) => 
+                <div className='px-3 text-nowrap text-light name' key={name} onClick={removeName}>
+                  {name}
+                </div>
+              )
+          }
+        </div>
+      </div>
+      
     </div>
   );
 }
