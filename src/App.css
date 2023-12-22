@@ -1,11 +1,20 @@
 .login { 
 	position: absolute;
-	top: 30%;
-	left: 50%;
-	margin: -150px 0 0 -150px;
 	width:300px;
 	height:300px;
 	cursor: default;
+}
+
+.student-side {
+	top: 30%;
+	left: 30%;
+	margin: -150px 0 0 -150px;
+}
+
+.parent-side {
+	top: 30%;
+	left: 80%;
+	margin: -150px 0 0 -150px;
 }
 
 .login h1 { color: #fff; text-shadow: 0 0 10px rgba(0,0,0,0.3); letter-spacing:1px; text-align:center; }
@@ -17,7 +26,6 @@ input {
 	border: none;
 	outline: none;
 	padding: 10px;
-	font-size: 13px;
 	color: #fff;
 	text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
 	border: 1px solid rgba(0,0,0,0.3);
@@ -36,16 +44,58 @@ input {
 
 input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgba(255,255,255,0.2); }
 
-.name {
-	padding-top: 1vh;
-	padding-bottom: 1vh;
+.names {
+	position: relative;
+	transition: border 0.2s ease-in;
+}
+
+.names::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 50%;
+	width: 0;
+	height: 2px;
+	background: rgba(255, 255, 255, 0.34);
+	transition: width 0.2s ease-in;
+	transform: translateX(-50%);
+}
+
+.names:hover::before {
+	width: 100%;
 }
 
 .name:hover {
-	color: rgba(255, 255, 255, 0.34) !important;
-	text-decoration: line-through;
+	/* text-decoration: line-through; */
 	cursor: pointer;
-	
+}
+
+.name {
+	padding-top: 1vh;
+	padding-bottom: 1vh;
+	display: inline-flex;
+	align-items: center;
+	position: relative;
+}
+
+.name span {
+	position: relative;
+}
+
+.name span::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 0;
+	height: 3px;
+	background: white;
+	transition: width 0.3s ease-out;
+	transform: translateX(-50%);
+}
+
+.name span:hover::before {
+	width: 100%;
 }
 
 .students {
@@ -68,28 +118,10 @@ input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgb
 	cursor: default;
 }
 
-.rainbow-text {
-	background: 
-		linear-gradient(
-			to right,
-			rgba(255,0,0,1) 0%,
-			rgba(255,154,0,1) 10%,
-			rgba(208,222,33,1) 20%,
-			rgba(79,220,74,1) 30%,
-			rgba(63,105,216,1) 40%,
-			rgba(47,150,226,1) 50%,
-			rgba(28,127,238,1) 60%,
-			rgba(95,21,242,1) 70%,
-			rgba(186,12,248,1) 80%,
-			rgba(251,7,217,1) 90%,
-			rgba(255,0,0,1) 100%) 
-			0 0/200% 100%;
-	animation: rainbow 5s linear infinite;
-	-webkit-text-fill-color: transparent;
-	-webkit-background-clip: text;
-	background-clip: text;
+.text-red {
+	color: rgba(255, 92, 92, 0.548) !important;
 }
 
-@keyframes rainbow {
-	to {background-position: -200% 0}
+.text-transparent {
+	color: rgba(255, 255, 255, 0.34) !important;
 }
