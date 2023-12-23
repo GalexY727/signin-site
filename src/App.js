@@ -1,19 +1,24 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import studentWhitelist from './studentWhitelist';
 
 function App() {
   
-  const studentURL = "https://script.google.com/macros/s/AKfycbxgDAO5EbVXVcRjcWpX4Akv9IIWN5gYImOxBUg3naqJ-3_iXU7ra05Z01iXvlRpgJ8/exec"
-  const parentURL = "https://script.google.com/macros/s/AKfycbxgDAO5EbVXVcRjcWpX4Akv9IIWN5gYImOxBUg3naqJ-3_iXU7ra05Z01iXvlRpgJ8/exec"
+  useEffect(() => {
+      fetch(process.env.REACT_APP_GET_SHEET_DATA, {method: 'GET'})
+              .then((response) => response.json())
+              .then((json) => {
+                if (json.valueRanges && json.valueRanges[0] && json.valueRanges[0].values) {
+                  setStudentNames(json.valueRanges[0].values.map((name) => name[0]).filter((name)=> name !== undefined));
+                }
+                if (json.valueRanges && json.valueRanges[1] && json.valueRanges[1].values) {
+                  setParentNames(json.valueRanges[1].values.map((name) => name[0]).filter((name) => name !== undefined));
+                }
+              });
+  }, [])
   
-  // docs: https://developers.google.com/sheets/api/samples/reading
-  const sheetID = "1ulwe7y6T8UmQq_ItNZGkrwVdd4wi47h5RS_Wlexn32o";
-  const sheetValues = "CurrentlySignedIn!A2:A";
-  const sheetUrl = "https://sheets.googleapis.com/v4/spreadsheets/" + sheetID + "/values/" + sheetValues; 
-
   const [studentNames, setStudentNames] = useState([]);
   const [parentNames, setParentNames] = useState([]);
 
@@ -23,10 +28,9 @@ function App() {
   let isShiftPressed = false;
 
   let hoverInterval;
-
+  
   const studentSubmit = (e) => {
     e.preventDefault();
-    
     const ref = studentRef.current;
     // normalize the input by removing all non-alphanumeric characters, 
     // trim spaces, and lowercase
@@ -70,7 +74,6 @@ function App() {
     e.preventDefault();
     const ref = parentRef.current;
     const name = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
-    console.log(name)
     setParentNames([...parentNames, name]);
     makeData(name, 'In', false);
     parentRef.current.value = "";
@@ -92,26 +95,27 @@ function App() {
       setParentNames(parentNames.filter((el) => el !== name));
       makeData(name, 'Out', false);
     }
+
   }
 
   const makeData = async (name, inOrOut, isStudent=true) => {
     const data = [
       ['name', name],
       ['timestamp', Date.now() - 28800000], // Convert to PST from UTC
-      ['inOrOut', inOrOut]
+      ['inOrOut', inOrOut],
+      ['studentOrParent', isStudent ? 'Student' : 'Parent']
     ]
-    postStudent(data, isStudent);
+    postData(data, isStudent);
   }
 
-  const postStudent = (data, isStudent) => {
+  const postData = (data, isStudent) => {
 
     var formDataObject = new FormData()
 
     data.forEach(element => {
       formDataObject.append(element[0], element[1])
     });
-
-    fetch(isStudent ? studentURL : parentURL, {method: 'POST', body: formDataObject})
+    fetch(process.env.REACT_APP_SHEET_POST_URL, {method: 'POST', body: formDataObject})
     .catch(err => console.log(err))
   }
 
@@ -149,13 +153,13 @@ function App() {
 
   return (
     <div>
-      <div class="login student-side">
+      <div className="login student-side">
         <h1 className='user-select-none'>Student sign in</h1>
           <form onSubmit={studentSubmit}>
             <input ref={studentRef} type="text" name="u" placeholder="Enter your full name" className='form' required="required" />
           </form>
       </div>
-      <div class="login parent-side">
+      <div className="login parent-side">
         <h1 className='user-select-none'>Parent sign in</h1>
           <form onSubmit={parentSubmit}>
             <input ref={parentRef} type="text" name="v" placeholder="Enter your full name" className='form' required="required" />
@@ -165,8 +169,8 @@ function App() {
         <div className='names d-flex flex-wrap'>
           {
             studentNames.map(
-              (name) => 
-                <div className='px-3 text-nowrap text-light name' key={name}>
+              (name,index) => 
+                <div className='px-3 text-nowrap text-light name' key={index}>
                   <span onMouseOver={startHover} onMouseOut={stopHover} onClick={removeName}>{name}</span>
                 </div>
             )
