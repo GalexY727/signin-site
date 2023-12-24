@@ -91,8 +91,11 @@ function calculateDuration(rawDataSheet, name) {
     const signInDayPST = Utilities.formatDate(new Date(signInTime), "PST", "MM/dd/yyyy")
     const signOutDayPST = Utilities.formatDate(new Date(), "PST", "MM/dd/yyyy")
 
+    let duration = 0;
     if (signInDayPST === signOutDayPST) {
-        const duration = new Date().getTime() - new Date(signInTime).getTime()
+        duration = new Date().getTime() - new Date(signInTime).getTime()
     }
+
+    return duration;
 }
 
