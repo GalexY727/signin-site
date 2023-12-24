@@ -2,6 +2,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import { useState, useRef, useEffect } from 'react';
+import AutoComplete from './AutoComplete';
 import studentWhitelist from './studentWhitelist';
 
 function App() {
@@ -26,12 +27,9 @@ function App() {
   const parentRef = useRef()
 
   let isShiftPressed = false;
-
-  let hoverInterval;
   
-  const studentSubmit = (e) => {
-    e.preventDefault();
-    const ref = studentRef.current;
+  const studentSubmit = (inputRef) => {
+    const ref = inputRef.current;
     // normalize the input by removing all non-alphanumeric characters, 
     // trim spaces, and lowercase
     const input = ref.value.trim().toLowerCase().replace(/[^a-zA-Z0-9 ]/g, "");
@@ -67,7 +65,7 @@ function App() {
     let realName = studentWhitelist[0][studentWhitelist[1].indexOf(equalityName)];
     setStudentNames([...studentNames, realName]);
     makeData(realName, 'In');
-    studentRef.current.value = "";
+    inputRef.current.value = "";
   }
 
   const parentSubmit = (e) => {
@@ -115,7 +113,10 @@ function App() {
     data.forEach(element => {
       formDataObject.append(element[0], element[1])
     });
-    fetch(process.env.REACT_APP_SHEET_POST_URL, {method: 'POST', body: formDataObject})
+
+    let url = process.env.REACT_APP_SHEET_POST_URL;
+    url = "https://script.google.com/macros/s/AKfycbxCNw4ENEt3uJmJikWq7WQLeHv182INQgTsofIE7SxWsQFkFPm2jnG3rgzpHkvtvV3dow/exec"
+    fetch(url, {method: 'POST', body: formDataObject})
     .catch(err => console.log(err))
   }
 
@@ -131,24 +132,32 @@ function App() {
     }
   });
 
+  let hoverEffect = false;
+
   const startHover = (e) => {
     e.preventDefault();
-    hoverInterval = setInterval(() => {
-      if (isShiftPressed) {
-        e.target.classList.add('text-transparent');
-        e.target.classList.remove('text-red');
-      } else {
-        e.target.classList.add('text-red');
-        e.target.classList.remove('text-transparent');
-      }
-    }, 20);
+    if (hoverEffect) {
+        e.target.dataset.hoverInterval = setInterval(() => {
+        if (isShiftPressed) {
+          e.target.classList.add('text-red');
+          e.target.classList.remove('text-transparent');
+        } else {
+          e.target.classList.add('text-transparent');
+          e.target.classList.remove('text-red');
+        }
+      }, 50);
+    } else {
+      e.target.classList.add('text-transparent');
+    }
   }
 
   const stopHover = (e) => {
     e.preventDefault();
+    if (hoverEffect) {
+      clearInterval(e.target.dataset.hoverInterval);
+      e.target.classList.remove('text-red');
+    }
     e.target.classList.remove('text-transparent');
-    e.target.classList.remove('text-red');
-    clearInterval(hoverInterval);
   }
 
   return (
@@ -156,7 +165,7 @@ function App() {
       <div className="login student-side">
         <h1 className='user-select-none'>Student sign in</h1>
           <form onSubmit={studentSubmit}>
-            <input ref={studentRef} type="text" name="u" placeholder="Enter your full name" className='form' required="required" />
+            <AutoComplete onSubmit={studentSubmit} ref={studentRef} options={studentWhitelist[0]} className='form'/>
           </form>
       </div>
       <div className="login parent-side">
