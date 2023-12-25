@@ -98,7 +98,6 @@ const AutoComplete = ({ whitelist , onSubmit }) => {
                     type="text"
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
-                    onFocus={() => setShowSuggestions(true)}
                     ref={autoCompleteRef}
                     onKeyDown={keyDownHandler}
                     placeholder="Enter your full name"
