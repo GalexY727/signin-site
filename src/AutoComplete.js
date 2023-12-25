@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import './AutoComplete.css';
 
-const AutoComplete = ({ options = ["Alexander", "Alice", "Alone"] , onSubmit }) => {
+const AutoComplete = ({ whitelist , onSubmit }) => {
     const [value, setValue] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
 
     const suggestions = value.match(/[a-z0-9]/i) 
-        ? options
-            .filter((option) => option.toLowerCase().indexOf(value.toLowerCase()) > -1)
+        ? whitelist
+            .filter((name) => name.toLowerCase().indexOf(value.toLowerCase()) > -1)
             .slice(0, 3) // Only take the first three suggestions
         : [];
 

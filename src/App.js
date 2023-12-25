@@ -6,27 +6,66 @@ import AutoComplete from './AutoComplete';
 import studentWhitelist from './studentWhitelist';
 
 function App() {
-  
-  useEffect(() => {
-      fetch(process.env.REACT_APP_GET_SHEET_DATA, {method: 'GET'})
-              .then((response) => response.json())
-              .then((json) => {
-                if (json.valueRanges && json.valueRanges[0] && json.valueRanges[0].values) {
-                  setStudentNames(json.valueRanges[0].values.map((name) => name[0]).filter((name)=> name !== undefined));
-                }
-                if (json.valueRanges && json.valueRanges[1] && json.valueRanges[1].values) {
-                  setParentNames(json.valueRanges[1].values.map((name) => name[0]).filter((name) => name !== undefined));
-                }
-              });
-  }, [])
-  
+
   const [studentNames, setStudentNames] = useState([]);
   const [parentNames, setParentNames] = useState([]);
-
+  
   const studentRef = useRef()
   const parentRef = useRef()
+  
+  // Pull from the cache in sheets on startup
+  useEffect(() => {
+        setTimeout(() => {
+          fetch(process.env.REACT_APP_GET_SHEET_DATA, {method: 'GET'})
+                  .then((response) => response.json())
+                  .then((json) => {
+                    if (json.valueRanges && json.valueRanges[0] && json.valueRanges[0].values) {
+                      setStudentNames(json.valueRanges[0].values.map((name) => name[0]).filter((name)=> name !== undefined));
+                    }
+                    if (json.valueRanges && json.valueRanges[1] && json.valueRanges[1].values) {
+                      setParentNames(json.valueRanges[1].values.map((name) => name[0]).filter((name) => name !== undefined));
+                    }
+                  });
+        }, 3000);
+        
+  }, [])
 
-  let isShiftPressed = false;
+  const acceptedAnimation = (ref) => {
+    ref.animate(
+      [
+        { transform: "scale(1)" },
+        { transform: "scale(1.02)", background: "rgba(0,255,0,0.5)" },
+        { transform: "scale(1)", background: "rgba(0,0,0,0.3)" },
+      ],
+      { duration: 800, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "both" }
+    );
+  };
+  const deniedAnimation = (ref) => {
+    ref.animate(
+      [
+        { transform: "translate(1px, 1px) rotate(0deg)" },
+        { transform: "translate(-1px, -2px) rotate(-1deg)" },
+        { transform: "translate(-3px, 0px) rotate(1deg)", background: "red" },
+        { transform: "translate(3px, 2px) rotate(0deg)" },
+        { transform: "translate(1px, -1px) rotate(1deg)" },
+        { transform: "translate(-1px, 2px) rotate(-1deg)" },
+        { transform: "translate(-3px, 1px) rotate(0deg)" },
+        { transform: "translate(3px, 1px) rotate(-1deg)" },
+        { transform: "translate(-1px, -1px) rotate(1deg)" },
+        { transform: "translate(1px, 2px) rotate(0deg)" },
+        { transform: "translate(1px, -2px) rotate(-1deg)" },
+        {
+          transform: "translate(1px, 1px) rotate(0deg)",
+          background: "rgba(0,0,0,0.3)",
+        },
+      ],
+      {
+        duration: 820,
+        easing: "cubic-bezier(.36,.07,.19,.97)",
+        fill: "both",
+      }
+    );
+  };
   
   const studentSubmit = (inputRef) => {
     const ref = inputRef.current;
@@ -41,27 +80,11 @@ function App() {
     if (!studentWhitelist[1].includes(equalityName) ||
         studentNames.includes(studentWhitelist[0][studentWhitelist[1].indexOf(equalityName)])) 
       {
-      ref.animate(
-        [ { transform: "translate(1px, 1px) rotate(0deg)", },
-          { transform: "translate(-1px, -2px) rotate(-1deg)" },
-          { transform: "translate(-3px, 0px) rotate(1deg)", background: "red"},
-          { transform: "translate(3px, 2px) rotate(0deg)",  },
-          { transform: "translate(1px, -1px) rotate(1deg)" },
-          { transform: "translate(-1px, 2px) rotate(-1deg)" },
-          { transform: "translate(-3px, 1px) rotate(0deg)" },
-          { transform: "translate(3px, 1px) rotate(-1deg)" },
-          { transform: "translate(-1px, -1px) rotate(1deg)" },
-          { transform: "translate(1px, 2px) rotate(0deg)" },
-          { transform: "translate(1px, -2px) rotate(-1deg)" },
-          { transform: "translate(1px, 1px) rotate(0deg)", background: "rgba(0,0,0,0.3)" }
-        ], { 
-          duration: 820,
-          easing: "cubic-bezier(.36,.07,.19,.97)",
-          fill: "both"
-        });
+      deniedAnimation(ref);
       return
     }
-    
+
+    acceptedAnimation(ref);
     let realName = studentWhitelist[0][studentWhitelist[1].indexOf(equalityName)];
     setStudentNames([...studentNames, realName]);
     makeData(realName, 'In');
@@ -115,87 +138,71 @@ function App() {
     });
 
     let url = process.env.REACT_APP_SHEET_POST_URL;
-    url = "https://script.google.com/macros/s/AKfycbxCNw4ENEt3uJmJikWq7WQLeHv182INQgTsofIE7SxWsQFkFPm2jnG3rgzpHkvtvV3dow/exec"
+    
     fetch(url, {method: 'POST', body: formDataObject})
     .catch(err => console.log(err))
-  }
-
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Shift') {
-      isShiftPressed = true;
-    }
-  });
-
-  window.addEventListener('keyup', (e) => {
-    if (e.key === 'Shift') {
-      isShiftPressed = false;
-    }
-  });
-
-  let hoverEffect = false;
-
-  const startHover = (e) => {
-    e.preventDefault();
-    if (hoverEffect) {
-        e.target.dataset.hoverInterval = setInterval(() => {
-        if (isShiftPressed) {
-          e.target.classList.add('text-red');
-          e.target.classList.remove('text-transparent');
-        } else {
-          e.target.classList.add('text-transparent');
-          e.target.classList.remove('text-red');
-        }
-      }, 50);
-    } else {
-      e.target.classList.add('text-transparent');
-    }
-  }
-
-  const stopHover = (e) => {
-    e.preventDefault();
-    if (hoverEffect) {
-      clearInterval(e.target.dataset.hoverInterval);
-      e.target.classList.remove('text-red');
-    }
-    e.target.classList.remove('text-transparent');
   }
 
   return (
     <div>
       <div className="login student-side">
-        <h1 className='user-select-none'>Student sign in</h1>
-          <form onSubmit={studentSubmit}>
-            <AutoComplete onSubmit={studentSubmit} ref={studentRef} options={studentWhitelist[0]} className='form'/>
-          </form>
+        <h1 className="user-select-none">Student sign in</h1>
+        <form onSubmit={studentSubmit}>
+          <AutoComplete
+            onSubmit={studentSubmit}
+            ref={studentRef}
+            whitelist={studentWhitelist[0]}
+            className="form"
+          />
+        </form>
       </div>
       <div className="login parent-side">
-        <h1 className='user-select-none'>Parent sign in</h1>
-          <form onSubmit={parentSubmit}>
-            <input ref={parentRef} type="text" name="v" placeholder="Enter your full name" className='form' required="required" />
-          </form>
+        <h1 className="user-select-none">Parent sign in</h1>
+        <form onSubmit={parentSubmit}>
+          <input
+            ref={parentRef}
+            type="text"
+            name="v"
+            placeholder="Enter your full name"
+            className="form"
+            required="required"
+          />
+        </form>
       </div>
-      <div className='px-3 text-center text-light students user-select-none'>Students:
-        <div className='names d-flex flex-wrap'>
-          {
-            studentNames.map(
-              (name,index) => 
-                <div className='px-3 text-nowrap text-light name' key={index}>
-                  <span onMouseOver={startHover} onMouseOut={stopHover} onClick={removeName}>{name}</span>
-                </div>
-            )
-          }
+      <div className={`px-3 text-center text-light students user-select-none ${studentNames.length === 0 ? "opacity-0" : ""}`}>
+        Students:
+        <div className="names d-flex flex-wrap">
+          {studentNames.map((name, index) => (
+            <div className="px-3 text-nowrap text-light name" key={index}>
+              <span
+                onMouseOver={(e) => e.target.classList.add("text-transparent")}
+                onMouseOut={(e) =>
+                  e.target.classList.remove("text-transparent")
+                }
+                onClick={removeName}
+              >
+                {name}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
-      <div className='px-3 text-center text-light mentors user-select-none'>Parents:
-      <div className='names d-flex flex-wrap'>
-          {
-            parentNames.map(
-              (name) => 
-                <div className='px-3 text-nowrap text-light name' key={name}>
-                  <span onMouseOver={startHover} onMouseOut={stopHover} onClick={removeName}>{name}</span>
-                </div>
-            )
-          }
+      <div className={`px-3 text-center text-light mentors user-select-none ${parentNames.length === 0 ? "opacity-0" : ""}`}>
+        Parents:
+        <div className="names d-flex flex-wrap">
+          {parentNames.map((name) => (
+            <div className="px-3 text-nowrap text-light name" key={name}>
+              <span
+                onMouseOver={(e) => e.target.classList.add("text-transparent")}
+                onMouseOut={(e) =>
+                  e.target.classList.remove("text-transparent")
+                }
+                onClick={removeName}
+              >
+                {name}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
