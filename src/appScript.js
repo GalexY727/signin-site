@@ -1,3 +1,6 @@
+// This file is the apps script that is linked to the Google Sheet
+// editing this file makes no changes if you don't copy it to google
+
 // Original code from https://github.com/jamiewilson/form-to-google-sheets
 // Updated for 2021 and ES6 standards
 
@@ -63,7 +66,7 @@ function doPost (e) {
             cacheSheet.getRange(rowIndex + 2, columnIndex).setValue(e.parameter.name);
         }
     }
-
+  
     rawDataSheet.getRange(nextRow, 1, 1, newRow.length).setValues([newRow])    
 
     return ContentService
@@ -82,20 +85,21 @@ function doPost (e) {
 }
 
 function calculateDuration(rawDataSheet, name) {
+    // Get the range of 'A2:D${lastRow}' in the raw data sheet
+    // Last row is just setting the upper limit via append
     const rawDataValues = rawDataSheet.getRange('A2:D' + rawDataSheet.getLastRow()).getValues()
-    const lastSignInIndex = rawDataValues.slice().reverse().findIndex(row => row[0] === name && row[1] === 'In')
-    const lastSignInRow = rawDataValues[rawDataValues.length - 1 - lastSignInIndex]
-    const signInTime = lastSignInRow[2] // Assuming the timestamp is in the 4th (D) column and is a JavaScript Date
-
-    // Ensure sign-in and sign-out are on the same day
-    const signInDayPST = Utilities.formatDate(new Date(signInTime), "PST", "MM/dd/yyyy")
     const signOutDayPST = Utilities.formatDate(new Date(), "PST", "MM/dd/yyyy")
+    
+    const sortByDate = rawDataValues.filter((row) => {return Utilities.formatDate(row[2], "PST", "MM/dd/yyyy") === signOutDayPST})
+    const sortByTime = sortByDate.slice().sort((a, b) => b[2].getTime() - a[2].getTime())
+    const lastSignInIndex = sortByTime.findIndex(row => row[0] === name && row[1] === 'In')
+    
+    const lastSignInTime = sortByTime[lastSignInIndex][2];
+    const signInDayPST = Utilities.formatDate(new Date(lastSignInTime), "PST", "MM/dd/yyyy")
 
     let duration = 0;
     if (signInDayPST === signOutDayPST) {
-        duration = new Date().getTime() - new Date(signInTime).getTime()
+        duration = new Date().getTime() - new Date(lastSignInTime).getTime()
     }
-
     return duration;
 }
-
