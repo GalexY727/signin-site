@@ -1,15 +1,16 @@
-import React from 'react';
+import { React, useState, useRef, useEffect } from 'react';
+import AutoComplete from './AutoComplete';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import { useState, useRef, useEffect } from 'react';
-import AutoComplete from './AutoComplete';
-import studentWhitelist from './studentWhitelist';
+import './Loader.css';
 
 function App() {
 
   const [studentNames, setStudentNames] = useState([]);
   const [parentNames, setParentNames] = useState([]);
-  
+  const [studentWhitelist, setStudentWhitelist] = useState([[], []]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const studentRef = useRef()
   const parentRef = useRef()
   
@@ -20,14 +21,24 @@ function App() {
                   .then((response) => response.json())
                   .then((json) => {
                     if (json.valueRanges && json.valueRanges[0] && json.valueRanges[0].values) {
-                      setStudentNames(json.valueRanges[0].values.map((name) => name[0]).filter((name)=> name !== undefined));
+                      setStudentNames(json.valueRanges[0].values.map((name) => name[0]).filter((name)=> name !== undefined && name !== ''));
                     }
                     if (json.valueRanges && json.valueRanges[1] && json.valueRanges[1].values) {
-                      setParentNames(json.valueRanges[1].values.map((name) => name[0]).filter((name) => name !== undefined));
+                      setParentNames(json.valueRanges[1].values.map((name) => name[0]).filter((name) => name !== undefined && name !== ''));
                     }
+                    // Set the studentWhitelist based upon col 5
+                    if (json.valueRanges && json.valueRanges[2] && json.valueRanges[2].values) {
+                      let whitelist = json.valueRanges[2].values.map((name) => name[0]).filter((name) => name !== undefined && name.replace(/[^a-zA-Z0-9 ]/g, "").trim() !== '');
+                      setStudentWhitelist([
+                        whitelist,
+                        whitelist.map((name) => 
+                          (name.replace(/[^a-zA-Z0-9 ]/g, "").trim().split(' ')[0] + ' ' + name.split(' ')[1].charAt(0)).toLowerCase()
+                        )
+                      ]);
+                    }
+                    setIsLoading(false);
                   });
         }, 3000);
-        
   }, [])
 
   const acceptedAnimation = (ref) => {
@@ -64,6 +75,17 @@ function App() {
         easing: "cubic-bezier(.36,.07,.19,.97)",
         fill: "both",
       }
+    );
+  };
+
+  const nameRemovalAnimation = (ref) => {
+    ref.animate(
+      [
+        { transform: "scale(1)" },
+        { transform: "scale(1.02)" },
+        { transform: "scale(0.01)" },
+      ],
+      { duration: 500, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "forwards" }
     );
   };
   
@@ -110,7 +132,13 @@ function App() {
     let name = e.target.innerHTML;
     
     if (studentNames.includes(name)) {
-      setStudentNames(studentNames.filter((el) => el !== name));
+      // This is quite buggy, if you remove a name it will make another transparent...
+      // Try experimenting with maybe making a new element that is separate from this area...
+      // a closing transition would be neatm transition transformX?
+      setTimeout(() => {
+        setStudentNames(studentNames.filter((el) => el !== name));
+      }, 550);
+      nameRemovalAnimation(e.target);
       makeData(capitalizeEachWord(name), 'Out');
     } else {
       setParentNames(parentNames.filter((el) => el !== name));
@@ -138,9 +166,8 @@ function App() {
     });
 
     let url = process.env.REACT_APP_SHEET_POST_URL;
-    
     fetch(url, {method: 'POST', body: formDataObject})
-    .catch(err => console.log(err))
+      .catch(err => console.log(err))
   }
 
   return (
@@ -169,16 +196,12 @@ function App() {
           />
         </form>
       </div>
-      <div className={`px-3 text-center text-light students user-select-none ${studentNames.length === 0 ? "opacity-0" : ""}`}>
-        Students:
+      <div className="px-3 text-center text-light students user-select-none">
+        {isLoading || studentNames.length === 0 ? " " : "Students:"}
         <div className="names d-flex flex-wrap">
           {studentNames.map((name, index) => (
             <div className="px-3 text-nowrap text-light name" key={index}>
               <span
-                onMouseOver={(e) => e.target.classList.add("text-transparent")}
-                onMouseOut={(e) =>
-                  e.target.classList.remove("text-transparent")
-                }
                 onClick={removeName}
               >
                 {name}
@@ -186,17 +209,14 @@ function App() {
             </div>
           ))}
         </div>
+        <span className='loader'></span>
       </div>
-      <div className={`px-3 text-center text-light mentors user-select-none ${parentNames.length === 0 ? "opacity-0" : ""}`}>
-        Parents:
+      <div className='px-3 text-center text-light mentors user-select-none'>
+        {isLoading || parentNames.length === 0 ? " " : "Parents:"}
         <div className="names d-flex flex-wrap">
           {parentNames.map((name) => (
             <div className="px-3 text-nowrap text-light name" key={name}>
               <span
-                onMouseOver={(e) => e.target.classList.add("text-transparent")}
-                onMouseOut={(e) =>
-                  e.target.classList.remove("text-transparent")
-                }
                 onClick={removeName}
               >
                 {name}
@@ -204,6 +224,7 @@ function App() {
             </div>
           ))}
         </div>
+        <span className='loader'></span>
       </div>
     </div>
   );

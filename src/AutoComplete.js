@@ -9,7 +9,7 @@ const AutoComplete = ({ whitelist , onSubmit }) => {
     const suggestions = value.match(/[a-z0-9]/i) 
         ? whitelist
             .filter((name) => name.toLowerCase().indexOf(value.toLowerCase()) > -1)
-            .slice(0, 3) // Only take the first three suggestions
+            .slice(0, 5) // Only take the first three suggestions
         : [];
 
     const autoCompleteHandler = value + (suggestions[activeSuggestionIndex] || '').slice(value.length);
