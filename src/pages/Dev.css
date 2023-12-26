@@ -1,0 +1,22 @@
+.grid-container {
+    display: grid;
+    grid-template-columns: 20% 20% 60%;
+    padding: 2em;
+    grid-gap: 2em;
+    justify-items: stretch;
+    align-items: stretch;
+}
+
+.student{
+    padding-bottom: 2em;
+}
+
+.date {
+    padding-bottom: 2em;
+}
+
+.errors {
+    grid-column-start: 3;
+    grid-column-end: 4;
+}
+

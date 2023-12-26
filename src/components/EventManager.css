@@ -1,0 +1,20 @@
+.event-manager {
+    grid-column-start: 1;
+    grid-column-end: 3;
+}
+
+.submit-task {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    background-image: url('./add-button.svg');
+    background-size: 25px;
+    background-position: bottom;
+    background-repeat: no-repeat;
+    border-radius: 50%;
+    cursor: pointer;
+    float: left;
+    padding-right: 35px;
+    padding-top: 35px;
+}
