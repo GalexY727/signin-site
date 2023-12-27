@@ -28,7 +28,13 @@ function App() {
                     }
                     // Set the studentWhitelist based upon col 5
                     if (json.valueRanges && json.valueRanges[2] && json.valueRanges[2].values) {
-                      let whitelist = json.valueRanges[2].values.map((name) => name[0]).filter((name) => name !== undefined && name.replace(/[^a-zA-Z0-9 ]/g, "").trim() !== '');
+                      let whitelist = json.valueRanges[2].values
+                        .map((name) => name[0])
+                        .filter(
+                          (name) =>
+                            name !== undefined &&
+                            name.replace(/[^a-zA-Z0-9 ]/g, "").trim() !== ""
+                        );
                       setStudentWhitelist([
                         whitelist,
                         whitelist.map((name) => 
@@ -85,7 +91,7 @@ function App() {
         { transform: "scale(1.02)" },
         { transform: "scale(0.01)" },
       ],
-      { duration: 500, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "forwards" }
+      { duration: 500, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "both" }
     );
   };
   
@@ -199,8 +205,8 @@ function App() {
       <div className="px-3 text-center text-light students user-select-none">
         {isLoading || studentNames.length === 0 ? " " : "Students:"}
         <div className="names d-flex flex-wrap">
-          {studentNames.map((name, index) => (
-            <div className="px-3 text-nowrap text-light name" key={index}>
+          {studentNames.map((name) => (
+            <div className="px-3 text-nowrap text-light name" key={name}>
               <span
                 onClick={removeName}
               >
