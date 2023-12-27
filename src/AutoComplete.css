@@ -45,7 +45,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: #272727;
+    background: rgba(39, 39, 39, 0.9);
     border-radius: inherit;
     z-index: -1;
 }
@@ -63,7 +63,7 @@
     left: 0px;
     right: 0;
     bottom: 0;
-    background: #272727;
+    background: rgba(39, 39, 39, 0.9);
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     z-index: -1;
