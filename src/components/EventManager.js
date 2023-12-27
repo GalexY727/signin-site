@@ -1,8 +1,8 @@
+
+import { InputGroup } from 'react-bootstrap';
+import Form from 'react-bootstrap/Form';
 import './EventManager.css';
 import { useState } from 'react';
-
-import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
 
 function EventManager() {
     const [events, setEvents] = useState([]);
@@ -18,13 +18,16 @@ function EventManager() {
         <div className="event-manager">
             <h1 style={{color:'lightgray'}}>Events: </h1>
             <form onSubmit={addNewEvent}>
-                <button className="submit-task" />
-                <div style={{overflow: 'hidden', paddingRight: '.5em'}}>
-                <DropdownButton id="dropdown-basic-button" title="Dropdown button">
-                    <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                    <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                    <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-                </DropdownButton>
+            <button type="submit" className="submit-task" />
+                <div style={{overflow: 'hidden'}}>
+                    <InputGroup className="mb-3" style={{placeItems:"flex-end"}}>
+                        <Form.Select style={{maxWidth:"30%"}}>
+                            <option>In</option>
+                            <option>Out</option>
+                        </Form.Select>
+
+                        <Form.Control type="time" />
+                    </InputGroup>
                 </div>
             </form>
             <div className="events">
