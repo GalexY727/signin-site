@@ -138,12 +138,9 @@ function App() {
     let name = e.target.innerHTML;
     
     if (studentNames.includes(name)) {
-      // This is quite buggy, if you remove a name it will make another transparent...
-      // Try experimenting with maybe making a new element that is separate from this area...
-      // a closing transition would be neatm transition transformX?
-      setTimeout(() => {
-        setStudentNames(studentNames.filter((el) => el !== name));
-      }, 550);
+      setTimeout((nameToRemove) => {
+        setStudentNames((currentNames) => currentNames.filter((el) => el !== nameToRemove));
+      }, 550, name);
       nameRemovalAnimation(e.target);
       makeData(capitalizeEachWord(name), 'Out');
     } else {
@@ -207,9 +204,7 @@ function App() {
         <div className="names d-flex flex-wrap">
           {studentNames.map((name) => (
             <div className="px-3 text-nowrap text-light name" key={name}>
-              <span
-                onClick={removeName}
-              >
+              <span onClick={removeName}>
                 {name}
               </span>
             </div>
@@ -222,9 +217,7 @@ function App() {
         <div className="names d-flex flex-wrap">
           {parentNames.map((name) => (
             <div className="px-3 text-nowrap text-light name" key={name}>
-              <span
-                onClick={removeName}
-              >
+              <span onClick={removeName}>
                 {name}
               </span>
             </div>
