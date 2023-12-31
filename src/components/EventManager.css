@@ -8,15 +8,30 @@
     height: 32px;
     border: none;
     background: none;
-    background-image: url('./add-button.svg');
+    background-image: url('./plus-square.svg');
     background-size: 25px;
+    background-position: bottom;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    float: left;
+    padding-right: 35px;
+    padding-top: 35px;
+}
+
+.delete-task {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    background-image: url('./x.svg');
+    background-size: 35px;
     background-position: bottom;
     background-repeat: no-repeat;
     border-radius: 50%;
     cursor: pointer;
     float: left;
     padding-right: 35px;
-    padding-top: 35px;
+    padding-top: 40px;
 }
 
 .form-select { 

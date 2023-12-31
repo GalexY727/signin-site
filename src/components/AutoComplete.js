@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import './AutoComplete.css';
 
-const AutoComplete = ({ whitelist , onSubmit }) => {
-    const [value, setValue] = useState("");
+const AutoComplete = ({ initVal='', whitelist , onSubmit }) => {
+    const [value, setValue] = useState(initVal);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
 
-    const suggestions = value.match(/[a-z0-9]/i) 
+    const suggestions = value.match("/[a-z0-9]/i") 
         ? whitelist
             .filter((name) => name.toLowerCase().indexOf(value.toLowerCase()) > -1)
             .slice(0, 5) // Only take the first three suggestions
@@ -34,7 +34,8 @@ const AutoComplete = ({ whitelist , onSubmit }) => {
                 // Send the ref and give the code time to access
                 // the value since it was just updated
                 setTimeout(() => {
-                    onSubmit(autoCompleteRef);
+                    // onSubmit(autoCompleteRef);
+                    onSubmit(value);
                 }, 10);
             case 'Escape':
                 // in case the above case was just triggered,

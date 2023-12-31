@@ -11,7 +11,7 @@
     padding-bottom: 2em;
 }
 
-.date {
+.date-input {
     padding-bottom: 2em;
 }
 
@@ -20,3 +20,7 @@
     grid-column-end: 4;
 }
 
+
+html, body {
+    height: 100%;
+}
