@@ -9,6 +9,7 @@ function App() {
   const [studentNames, setStudentNames] = useState([]);
   const [parentNames, setParentNames] = useState([]);
   const [studentWhitelist, setStudentWhitelist] = useState([[], []]);
+  const [studentHashmap, setStudentHashmap] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
   const studentRef = useRef()
@@ -41,12 +42,18 @@ function App() {
                           (name.replace(/[^a-zA-Z0-9 ]/g, "").trim().split(' ')[0] + ' ' + name.split(' ')[1].charAt(0)).toLowerCase()
                         )
                       ]);
+                      setStudentHashmap(
+                        json.valueRanges[2].values.reduce((acc, [name, group]) => {
+                          acc[name] = group;
+                          return acc;
+                        }, {})
+                      );
                     }
                     setIsLoading(false);
                   });
         }, 3000);
   }, [])
-
+  
   const acceptedAnimation = (ref) => {
     ref.animate(
       [
@@ -114,8 +121,9 @@ function App() {
 
     acceptedAnimation(ref);
     let realName = studentWhitelist[0][studentWhitelist[1].indexOf(equalityName)];
-    setStudentNames([...studentNames, realName]);
-    makeData(realName, 'In');
+    let newStudentNames = [...studentNames, realName];
+    setStudentNames(newStudentNames);
+    makeData(realName, 'In', newStudentNames);
     inputRef.current.value = "";
   }
 
@@ -201,14 +209,64 @@ function App() {
       </div>
       <div className="px-3 text-center text-light students user-select-none">
         {isLoading || studentNames.length === 0 ? " " : "Students:"}
-        <div className="names d-flex flex-wrap">
+        {/* <div className="names d-flex flex-wrap">
           {studentNames.map((name) => (
-            <div className="px-3 text-nowrap text-light name" key={name}>
-              <span onClick={removeName}>
-                {name}
-              </span>
-            </div>
-          ))}
+                <div className="px-3 text-nowrap text-light name" key={name}>
+                  <span onClick={removeName}>
+                    {name}
+                  </span>
+                </div>
+              ))}
+        </div> */}
+        <div className="names d-flex flex-wrap">
+          <div className="group">
+            <h3>Build</h3>
+            {Object.entries(studentHashmap).map(([name, group]) => 
+              group === 'Build' && studentNames.includes(name) && (
+                <div className="px-3 text-nowrap text-light name" key={name}>
+                  <span onClick={removeName}>
+                    {name}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+          <div className="group">
+            <h3>Design</h3>
+            {Object.entries(studentHashmap).map(([name, group]) => 
+              group === 'Design' && studentNames.includes(name) && (
+                <div className="px-3 text-nowrap text-light name" key={name}>
+                  <span onClick={removeName}>
+                    {name}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+          <div className="group">
+            <h3>Programming</h3>
+            {Object.entries(studentHashmap).map(([name, group]) => 
+              group === 'Programming' && studentNames.includes(name) && (
+                <div className="px-3 text-nowrap text-light name" key={name}>
+                  <span onClick={removeName}>
+                    {name}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+          <div className="group">
+            <h3>Marketing</h3>
+            {Object.entries(studentHashmap).map(([name, group]) => 
+              group === 'Marketing' && studentNames.includes(name) && (
+                <div className="px-3 text-nowrap text-light name" key={name}>
+                  <span onClick={removeName}>
+                    {name}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
         </div>
         <span className='loader'></span>
       </div>
