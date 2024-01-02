@@ -1,3 +1,7 @@
+:root {
+	--left: 65%;
+}
+
 .login { 
 	position: absolute;
 	width:300px;
@@ -5,19 +9,27 @@
 	cursor: default;
 }
 
+.login h1 {
+	color: #fff;
+	text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+	letter-spacing: 1px;
+	text-align: center;
+}
+
 .student-side {
 	top: 30%;
-	left: 30%;
+	left: 33%;
 	margin: -150px 0 0 -150px;
 }
 
 .parent-side {
 	top: 30%;
-	left: 80%;
+	left: 79%;
+	width: max-content;
 	margin: -150px 0 0 -150px;
 }
 
-.login h1 { color: #fff; text-shadow: 0 0 10px rgba(0,0,0,0.3); letter-spacing:1px; text-align:center; }
+
 
 input { 
 	width: 100%; 
@@ -42,13 +54,13 @@ input {
 	cursor: text;
 }
 
-input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgba(255,255,255,0.2); }
+input:focus {
+	box-shadow: inset 0 -5px 45px rgba(100, 100, 100, 0.4), 0 1px 1px rgba(255, 255, 255, 0.2);
+}
 
 .names {
 	position: relative;
 	transition: border 0.2s ease-in;
-	display: flex;
-  	justify-content: space-between;
 }
 
 .names::before {
@@ -74,13 +86,12 @@ input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgb
 .name {
 	padding-top: 1vh;
 	padding-bottom: 1vh;
-	display: inline-flex;
+	display: grid;
 	align-items: center;
 	position: relative;
 	max-width: 0;
 	overflow: hidden;
 	animation: width-in 2s ease-out forwards;
-	font-size: min(1rem, 1.5rem);
 }
 
 .name span {
@@ -112,7 +123,7 @@ input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgb
     top: 30%;
     padding-left: 2vw;
     font-size: 1.5rem;
-    width: 60%;
+    width: var(--left);
     cursor: default;
     animation: fade-in 1s ease-in forwards;
 }
@@ -125,7 +136,6 @@ input:focus { box-shadow: inset 0 -5px 45px rgba(100,100,100,0.4), 0 1px 1px rgb
 }
 
 .mentors {
-	--left: 60%;
 	position:absolute;
 	top: 30%;
 	left: var(--left);

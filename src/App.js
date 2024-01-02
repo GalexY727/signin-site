@@ -44,6 +44,7 @@ function App() {
                       ]);
                       setStudentHashmap(
                         json.valueRanges[2].values.reduce((acc, [name, group]) => {
+                          console.log(json.valueRanges[2].values)
                           acc[name] = group;
                           return acc;
                         }, {})
@@ -195,7 +196,7 @@ function App() {
         </form>
       </div>
       <div className="login parent-side">
-        <h1 className="user-select-none">Parent sign in</h1>
+        <h1 className="user-select-none">Parent/Mentor sign in</h1>
         <form onSubmit={parentSubmit}>
           <input
             ref={parentRef}
@@ -204,23 +205,15 @@ function App() {
             placeholder="Enter your full name"
             className="form"
             required="required"
+            autoComplete='off'
           />
         </form>
       </div>
       <div className="px-3 text-center text-light students user-select-none">
-        {isLoading || studentNames.length === 0 ? " " : "Students:"}
-        {/* <div className="names d-flex flex-wrap">
-          {studentNames.map((name) => (
-                <div className="px-3 text-nowrap text-light name" key={name}>
-                  <span onClick={removeName}>
-                    {name}
-                  </span>
-                </div>
-              ))}
-        </div> */}
+        <h3>{isLoading || studentNames.length === 0 ? " " : "Students:"}</h3>
         <div className="names d-flex flex-wrap">
           <div className="group">
-            <h3>Build</h3>
+            <h4>Build</h4>
             {Object.entries(studentHashmap).map(([name, group]) => 
               group === 'Build' && studentNames.includes(name) && (
                 <div className="px-3 text-nowrap text-light name" key={name}>
@@ -232,7 +225,7 @@ function App() {
             )}
           </div>
           <div className="group">
-            <h3>Design</h3>
+            <h4>Design</h4>
             {Object.entries(studentHashmap).map(([name, group]) => 
               group === 'Design' && studentNames.includes(name) && (
                 <div className="px-3 text-nowrap text-light name" key={name}>
@@ -244,7 +237,7 @@ function App() {
             )}
           </div>
           <div className="group">
-            <h3>Programming</h3>
+            <h4>Programming</h4>
             {Object.entries(studentHashmap).map(([name, group]) => 
               group === 'Programming' && studentNames.includes(name) && (
                 <div className="px-3 text-nowrap text-light name" key={name}>
@@ -256,9 +249,21 @@ function App() {
             )}
           </div>
           <div className="group">
-            <h3>Marketing</h3>
+            <h4>Marketing</h4>
             {Object.entries(studentHashmap).map(([name, group]) => 
               group === 'Marketing' && studentNames.includes(name) && (
+                <div className="px-3 text-nowrap text-light name" key={name}>
+                  <span onClick={removeName}>
+                    {name}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+          <div className="group">
+            <h4>Leads</h4>
+            {Object.entries(studentHashmap).map(([name, group]) => 
+              group === 'Leadership' && studentNames.includes(name) && (
                 <div className="px-3 text-nowrap text-light name" key={name}>
                   <span onClick={removeName}>
                     {name}
@@ -271,10 +276,10 @@ function App() {
         <span className='loader'></span>
       </div>
       <div className='px-3 text-center text-light mentors user-select-none'>
-        {isLoading || parentNames.length === 0 ? " " : "Parents:"}
-        <div className="names d-flex flex-wrap">
+        <h3>{isLoading || parentNames.length === 0 ? " " : "Parents/Mentors:"}</h3>
+        <div className="names row">
           {parentNames.map((name) => (
-            <div className="px-3 text-nowrap text-light name" key={name}>
+            <div className="px-3 text-nowrap text-light name col-md-6" key={name}>
               <span onClick={removeName}>
                 {name}
               </span>
