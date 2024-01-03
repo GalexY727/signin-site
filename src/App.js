@@ -8,13 +8,12 @@ function App() {
 
   const [studentNames, setStudentNames] = useState([]);
   const [parentNames, setParentNames] = useState([]);
-  const [studentWhitelist, setStudentWhitelist] = useState([[], []]);
+  const [studentWhitelist, setStudentWhitelist] = useState([]);
+  const [parentWhitelist, setParentWhitelist] = useState([]);
   const [studentHashmap, setStudentHashmap] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const groupNames = ['Build', 'Design', 'Programming', 'Marketing', 'Leadership']; 
 
-  const studentRef = useRef()
-  const parentRef = useRef()
-  
   // Pull from the cache in sheets on startup
   useEffect(() => {
         setTimeout(() => {
@@ -29,25 +28,38 @@ function App() {
                     }
                     // Set the studentWhitelist based upon col 5
                     if (json.valueRanges && json.valueRanges[2] && json.valueRanges[2].values) {
-                      let whitelist = json.valueRanges[2].values
-                        .map((name) => name[0])
-                        .filter(
-                          (name) =>
-                            name !== undefined &&
-                            name.replace(/[^a-zA-Z0-9 ]/g, "").trim() !== ""
-                        );
-                      setStudentWhitelist([
-                        whitelist,
-                        whitelist.map((name) => 
-                          (name.replace(/[^a-zA-Z0-9 ]/g, "").trim().split(' ')[0] + ' ' + name.split(' ')[1].charAt(0)).toLowerCase()
-                        )
-                      ]);
+                      setStudentWhitelist(
+                        json.valueRanges[2].values
+                          .map((name) => name[0])
+                          .filter(
+                            (name) =>
+                              name !== undefined &&
+                              name.replace(/[^a-zA-Z0-9 ]/g, "").trim() !== ""
+                          )
+                      );
                       setStudentHashmap(
-                        json.valueRanges[2].values.reduce((acc, [name, group]) => {
-                          console.log(json.valueRanges[2].values)
-                          acc[name] = group;
-                          return acc;
-                        }, {})
+                        json.valueRanges[2].values.reduce(
+                          (acc, [name, group]) => {
+                            acc[name] = group;
+                            return acc;
+                          },
+                          {}
+                        )
+                      );
+                      setParentWhitelist(
+                        json.valueRanges[2].values
+                          .map((row) => {
+                            // Extract parent names from columns 3-8
+                            let parentNames = row
+                              .slice(2, 8)
+                              .filter((name) => name !== undefined);
+                            return parentNames;
+                          })
+                          .flat() // Flatten the array
+                          .filter(
+                            (name) =>
+                              name.replace(/[^a-zA-Z0-9 ]/g, "").trim() !== ""
+                          )
                       );
                     }
                     setIsLoading(false);
@@ -93,11 +105,11 @@ function App() {
   };
 
   const nameRemovalAnimation = (ref) => {
-    ref.animate(
+    return ref.animate(
       [
-        { transform: "scale(1)" },
+        { transform: "scale(1)", color: "rgba(255,0,0,0.5)" },
         { transform: "scale(1.02)" },
-        { transform: "scale(0.01)" },
+        { transform: "scale(0.01)", color: "rgba(255,0,0,0.5)"},
       ],
       { duration: 500, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "both" }
     );
@@ -107,34 +119,36 @@ function App() {
     const ref = inputRef.current;
     // normalize the input by removing all non-alphanumeric characters, 
     // trim spaces, and lowercase
-    const input = ref.value.trim().toLowerCase().replace(/[^a-zA-Z0-9 ]/g, "");
-    const equalityName = 
-      (input.split(' ').length > 1) 
-        ? (input.split(' ')[0] + ' ' + input.split(' ')[1].charAt(0)).toLowerCase() 
-        : input.toLowerCase();
+    const input = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
 
-    if (!studentWhitelist[1].includes(equalityName) ||
-        studentNames.includes(studentWhitelist[0][studentWhitelist[1].indexOf(equalityName)])) 
-      {
+    if (!studentWhitelist.includes(input) || studentNames.includes(input)) {
       deniedAnimation(ref);
       return
     }
 
     acceptedAnimation(ref);
-    let realName = studentWhitelist[0][studentWhitelist[1].indexOf(equalityName)];
-    let newStudentNames = [...studentNames, realName];
+    let newStudentNames = [...studentNames, input];
     setStudentNames(newStudentNames);
-    makeData(realName, 'In', newStudentNames);
+    makeData(input, 'In');
     inputRef.current.value = "";
   }
 
-  const parentSubmit = (e) => {
-    e.preventDefault();
-    const ref = parentRef.current;
-    const name = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
-    setParentNames([...parentNames, name]);
-    makeData(name, 'In', false);
-    parentRef.current.value = "";
+  const parentSubmit = (inputRef) => {
+    const ref = inputRef.current;
+    // normalize the input by removing all non-alphanumeric characters, 
+    // trim spaces, and lowercase
+    const input = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
+    
+    if (parentNames.includes(input) || !parentWhitelist.includes(input)) {
+      deniedAnimation(ref);
+      return
+    }
+
+    acceptedAnimation(ref);
+    let newParentNames = [...parentNames, input];
+    setParentNames(newParentNames);
+    makeData(input, 'In', false);
+    inputRef.current.value = "";
   }
 
   const capitalizeEachWord = (str) => {
@@ -144,17 +158,19 @@ function App() {
 
   const removeName = (e) => {
     e.preventDefault();
-    let name = e.target.innerHTML;
+    e.target.parentNode.style.pointerEvents = 'none';
+    let name = e.target.textContent;
     
     if (studentNames.includes(name)) {
-      setTimeout((nameToRemove) => {
-        setStudentNames((currentNames) => currentNames.filter((el) => el !== nameToRemove));
-      }, 550, name);
-      nameRemovalAnimation(e.target);
-      makeData(capitalizeEachWord(name), 'Out');
-    } else {
-      setParentNames(parentNames.filter((el) => el !== name));
+      makeData(name, 'Out');
+      nameRemovalAnimation(e.target.parentNode).onfinish = () => {
+        setStudentNames((currentNames) => currentNames.filter((el) => el !== name));
+      };
+    } else if (parentNames.includes(name)) {
       makeData(name, 'Out', false);
+      nameRemovalAnimation(e.target.parentNode).onfinish = () => {
+        setParentNames((currentNames) => currentNames.filter((el) => el !== name));
+      };
     }
 
   }
@@ -189,8 +205,7 @@ function App() {
         <form onSubmit={studentSubmit}>
           <AutoComplete
             onSubmit={studentSubmit}
-            ref={studentRef}
-            whitelist={studentWhitelist[0]}
+            whitelist={studentWhitelist}
             className="form"
           />
         </form>
@@ -198,90 +213,48 @@ function App() {
       <div className="login parent-side">
         <h1 className="user-select-none">Parent/Mentor sign in</h1>
         <form onSubmit={parentSubmit}>
-          <input
-            ref={parentRef}
-            type="text"
-            name="v"
-            placeholder="Enter your full name"
+          <AutoComplete
+            onSubmit={parentSubmit}
+            whitelist={parentWhitelist}
             className="form"
-            required="required"
-            autoComplete='off'
           />
         </form>
       </div>
       <div className="px-3 text-center text-light students user-select-none">
         <h3>{isLoading || studentNames.length === 0 ? " " : "Students:"}</h3>
         <div className="names d-flex flex-wrap">
-          <div className="group">
-            <h4>Build</h4>
-            {Object.entries(studentHashmap).map(([name, group]) => 
-              group === 'Build' && studentNames.includes(name) && (
-                <div className="px-3 text-nowrap text-light name" key={name}>
-                  <span onClick={removeName}>
-                    {name}
-                  </span>
+          {
+            /* Loop over each group (Build, Design, etc) */
+            groupNames.map(groupName => {
+              const namesInGroup = Object.entries(studentHashmap)
+              .filter(([name, group]) => group === groupName && studentNames.includes(name));
+              return namesInGroup.length > 0 && (
+                <div className="group-name" key={groupName}>
+                  <h4>{groupName}</h4>
+                  <div className="group">
+                    {namesInGroup.map(([name]) => (
+                      <div className="px-3 text-nowrap text-light name" key={name}>
+                        <span>
+                        {(name === 'Emily Hager') ? '🦒 ':''}
+                          <span onClick={removeName}>{name}</span>
+                        {(name === 'Emily Hager') ? ' 🦒':''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              )
-            )}
-          </div>
-          <div className="group">
-            <h4>Design</h4>
-            {Object.entries(studentHashmap).map(([name, group]) => 
-              group === 'Design' && studentNames.includes(name) && (
-                <div className="px-3 text-nowrap text-light name" key={name}>
-                  <span onClick={removeName}>
-                    {name}
-                  </span>
-                </div>
-              )
-            )}
-          </div>
-          <div className="group">
-            <h4>Programming</h4>
-            {Object.entries(studentHashmap).map(([name, group]) => 
-              group === 'Programming' && studentNames.includes(name) && (
-                <div className="px-3 text-nowrap text-light name" key={name}>
-                  <span onClick={removeName}>
-                    {name}
-                  </span>
-                </div>
-              )
-            )}
-          </div>
-          <div className="group">
-            <h4>Marketing</h4>
-            {Object.entries(studentHashmap).map(([name, group]) => 
-              group === 'Marketing' && studentNames.includes(name) && (
-                <div className="px-3 text-nowrap text-light name" key={name}>
-                  <span onClick={removeName}>
-                    {name}
-                  </span>
-                </div>
-              )
-            )}
-          </div>
-          <div className="group">
-            <h4>Leads</h4>
-            {Object.entries(studentHashmap).map(([name, group]) => 
-              group === 'Leadership' && studentNames.includes(name) && (
-                <div className="px-3 text-nowrap text-light name" key={name}>
-                  <span onClick={removeName}>
-                    {name}
-                  </span>
-                </div>
-              )
-            )}
-          </div>
+              );
+            })}
         </div>
         <span className='loader'></span>
       </div>
       <div className='px-3 text-center text-light mentors user-select-none'>
         <h3>{isLoading || parentNames.length === 0 ? " " : "Parents/Mentors:"}</h3>
-        <div className="names row">
+        <div className="names group row">
           {parentNames.map((name) => (
             <div className="px-3 text-nowrap text-light name col-md-6" key={name}>
-              <span onClick={removeName}>
-                {name}
+              <span>
+                <span onClick={removeName}>{name}</span>
               </span>
             </div>
           ))}

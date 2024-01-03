@@ -10,7 +10,7 @@
 }
 
 .login h1 {
-	color: #fff;
+	color: #ebf9ff;
 	text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 	letter-spacing: 1px;
 	text-align: center;
@@ -28,8 +28,6 @@
 	width: max-content;
 	margin: -150px 0 0 -150px;
 }
-
-
 
 input { 
 	width: 100%; 
@@ -61,9 +59,14 @@ input:focus {
 .names {
 	position: relative;
 	transition: border 0.2s ease-in;
+	
+	
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
 }
 
-.names::before {
+.names::before, .group::before {
 	content: "";
 	position: absolute;
 	top: 0;
@@ -75,11 +78,11 @@ input:focus {
 	transform: translateX(-50%);
 }
 
-.names:hover::before {
+.names:hover::before, .group:hover::before {
 	width: 100%;
 }
 
-.name:hover {
+.name:hover, .group:hover {
 	cursor: pointer;
 }
 
@@ -94,28 +97,28 @@ input:focus {
 	animation: width-in 2s ease-out forwards;
 }
 
-.name span {
-	position: relative;
+.name span span {
+  position: relative;
 }
 
-.name span::before {
-	content: "";
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	width: 0;
-	height: 3px;
-	background: white;
-	transition: width 0.3s ease-out;
-	transform: translateX(-50%);
+.name span span::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: white;
+  transition: width 0.3s ease-out;
+  transform: translateY(-50%);
 }
 
-.name span:hover {
-	color: rgba(255, 255, 255, 0.34);
+.name span span:hover {
+  color: rgba(255, 255, 255, 0.3);
 }
 
-.name span:hover::before {
-	width: 100%;
+.name span span:hover::before {
+  width: 100%;
 }
 
 .students {
@@ -131,8 +134,17 @@ input:focus {
 .group {
 	position: relative;
 	flex: 1;
-	overflow: hidden;
 	white-space: nowrap;
+	overflow-y: auto;
+	max-height: 60vh;
+}
+
+.group-name {
+	padding-top: 1vh;
+	position: sticky;
+	top: 0;
+	background: inherit;
+	z-index: 1;
 }
 
 .mentors {
