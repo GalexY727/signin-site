@@ -66,7 +66,8 @@ function App() {
                   });
         }, 3000);
   }, [])
-  
+
+
   const acceptedAnimation = (ref) => {
     ref.animate(
       [
@@ -77,6 +78,18 @@ function App() {
       { duration: 800, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "both" }
     );
   };
+
+  const removalAnimation = (ref) => {
+    ref.animate(
+        [
+          { transform: "scale(1)" },
+          { transform: "scale(0.93)", background: "rgba(170,19,24,0.6)" },
+          { transform: "scale(1)", background: "rgba(0,0,0,0.3)" },
+        ],
+        { duration: 800, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "both" }
+    );
+  };
+
   const deniedAnimation = (ref) => {
     ref.animate(
       [
@@ -121,9 +134,17 @@ function App() {
     // trim spaces, and lowercase
     const input = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
 
-    if (!studentWhitelist.includes(input) || studentNames.includes(input)) {
+    if (!studentWhitelist.includes(input)) {
       deniedAnimation(ref);
       return
+    }
+
+    if (studentNames.includes(input)) {
+      removalAnimation(ref);
+      makeData(input, 'Out');
+      setStudentNames((currentNames) => currentNames.filter((el) => el !== input));
+      inputRef.current.value = "";
+      return;
     }
 
     acceptedAnimation(ref);
@@ -151,16 +172,10 @@ function App() {
     inputRef.current.value = "";
   }
 
-  const capitalizeEachWord = (str) => {
-    // Capitalize each word
-    return str.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
-  }
-
   const removeName = (e) => {
     e.preventDefault();
     e.target.parentNode.style.pointerEvents = 'none';
     let name = e.target.textContent;
-    
     if (studentNames.includes(name)) {
       makeData(name, 'Out');
       nameRemovalAnimation(e.target.parentNode).onfinish = () => {
@@ -172,7 +187,6 @@ function App() {
         setParentNames((currentNames) => currentNames.filter((el) => el !== name));
       };
     }
-
   }
 
   const makeData = async (name, inOrOut, isStudent=true) => {
