@@ -214,25 +214,31 @@ function App() {
 
   return (
     <div>
-      <div className="login student-side">
-        <h1 className="user-select-none">Student sign in</h1>
-        <form onSubmit={studentSubmit}>
-          <AutoComplete
-            onSubmit={studentSubmit}
-            whitelist={studentWhitelist}
-            className="form"
-          />
-        </form>
+      <div className="instructions">
+        Enter a name to sign in.
+        Then, click the name or enter it again to sign out.
       </div>
-      <div className="login parent-side">
-        <h1 className="user-select-none">Parent/Mentor sign in</h1>
-        <form onSubmit={parentSubmit}>
-          <AutoComplete
-            onSubmit={parentSubmit}
-            whitelist={parentWhitelist}
-            className="form"
-          />
-        </form>
+      <div className='login-grid'>
+        <div className="login student-side">
+          <h1 className="user-select-none">Students</h1>
+          <form onSubmit={studentSubmit}>
+            <AutoComplete
+              onSubmit={studentSubmit}
+              whitelist={studentWhitelist}
+              className="form"
+            />
+          </form>
+        </div>
+        <div className="login parent-side">
+          <h1 className="user-select-none">Parents/Mentors</h1>
+          <form onSubmit={parentSubmit}>
+            <AutoComplete
+              onSubmit={parentSubmit}
+              whitelist={parentWhitelist}
+              className="form"
+            />
+          </form>
+        </div>
       </div>
       <div className="px-3 text-center text-light students user-select-none">
         <h3>{isLoading || studentNames.length === 0 ? " " : "Students:"}</h3>
@@ -263,8 +269,13 @@ function App() {
         <span className='loader'></span>
       </div>
       <div className='px-3 text-center text-light mentors user-select-none'>
-        <h3>{isLoading || parentNames.length === 0 ? " " : "Parents/Mentors:"}</h3>
+        <h3>{isLoading && parentNames.length === 0 ? " " : "Parents/Mentors:"}</h3>
         <div className="names group row">
+        <div className="px-3 text-nowrap text-light name col-md-6" key={name}>
+              <span>
+                <span onClick={removeName}>Paul Arzillo</span>
+              </span>
+            </div>
           {parentNames.map((name) => (
             <div className="px-3 text-nowrap text-light name col-md-6" key={name}>
               <span>
