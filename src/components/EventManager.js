@@ -3,8 +3,14 @@ import Form from "react-bootstrap/Form";
 import "./EventManager.css";
 import { useState } from "react";
 
-function EventManager() {
+function EventManager(name, date) {
     const [events, setEvents] = useState([]);
+
+    const inputName = name;
+    const inputDate = date;
+
+    console.log(inputName);
+    console.log(inputDate);
 
     const [signedInState, setSignedInState] = useState(true);
     const [time, setTime] = useState(
@@ -17,6 +23,7 @@ function EventManager() {
     const handleSelectChange = (e) => {
         setSignedInState(e.target.value === "In");
     };
+    
 
     const handleTimeChange = (e) => {
         setTime(e.target.value);
@@ -100,7 +107,7 @@ function EventManager() {
                                     <option>In</option>
                                     <option>Out</option>
                                 </Form.Select>
-
+                                
                                 <Form.Control
                                     defaultValue={convertTime12to24(event.time)}
                                     type="time"
