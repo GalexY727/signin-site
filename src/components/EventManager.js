@@ -56,28 +56,32 @@ function EventManager(name, date) {
             .then((json) => {
                 const data = json.valueRanges[3].values;
                 // console.log(data);
-                data.map((row) => {
+                const matchingEvents = data.map((row) => {
                     const name = row[0];
                     const state = row[1];
-                    const date = row[2];
+                    const date = row[2].split(" ")[0];
+                    const time = row[2].split(" ")[1];
 
                     let event = {
                         name: name,
                         state: state,
+                        time: time, 
                         date: date,
                     };
 
-                    // console.log(inputName.name);
-                    console.log(
-                        "inputName: " + inputName.name.replace(/\s+/g, ""), 
-                        "event Name: " + event.name.toLowerCase().replace(/\s+/g, ""), 
-                        "bool: " + inputName.name.replace(/\s+/g, "") === event.name.toLowerCase().replace(/\s+/g, ""));
-                    // if (inputName === event.name.toLowerCase()) {
-                    //     setEvents([...events, event]);
-                    // }
+                    // console.log(event);
+                    // console.log("Events: ", events);
+
+                    if (event.name.toLowerCase() === inputName.name.toLowerCase()) {
+                        return event;
+                    }
                 });
+
+                setEvents(matchingEvents);
+                
             });
-    }, []);
+    }, [ inputName ]);
+
     const addNewEvent = () => {
 
         let newEvent = {
@@ -94,7 +98,7 @@ function EventManager(name, date) {
         newEvents.splice(index, 1);
         setEvents(newEvents);
 
-        console.log(events);
+        // console.log(newEvents);  
     };
 
     return (
@@ -121,6 +125,7 @@ function EventManager(name, date) {
                 style={{ maxHeight: "calc(100vh - 22em)", overflow: "auto" }}
             >
                 {events.map((event) => (
+                    event &&
                     <div className="event">
                         <button className="delete-task" onClick={removeEvent} />
                         <div style={{ overflow: "hidden" }}>

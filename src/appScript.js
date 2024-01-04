@@ -1,6 +1,3 @@
-// This file is the apps script that is linked to the Google Sheet
-// editing this file makes no changes if you don't copy it to google
-
 // Original code from https://github.com/jamiewilson/form-to-google-sheets
 // Updated for 2021 and ES6 standards
 
@@ -17,7 +14,7 @@ function doPost (e) {
 
   try {
     const doc = SpreadsheetApp.openById(scriptProp.getProperty('key'));
-    let rawDataSheetName = 'Raw Data Students';
+    let rawDataSheetName = 'RawDataStudents';
     // Things needed to sync the cache in "CurrentlySignedInCache"
     const currentDate = new Date();
     const cacheSheet = doc.getSheetByName("CurrentlySignedInCache");
@@ -28,7 +25,7 @@ function doPost (e) {
     if (e.parameter.studentOrParent === 'Parent') {
         columnLetter = 'B';
         columnIndex = 2;
-        rawDataSheetName = 'Raw Data Parents'
+        rawDataSheetName = 'RawDataParents'
     }
 
     const rawDataSheet = doc.getSheetByName(rawDataSheetName)
@@ -87,19 +84,34 @@ function doPost (e) {
 function calculateDuration(rawDataSheet, name) {
     // Get the range of 'A2:D${lastRow}' in the raw data sheet
     // Last row is just setting the upper limit via append
-    const rawDataValues = rawDataSheet.getRange('A2:D' + rawDataSheet.getLastRow()).getValues()
-    const signOutDayPST = Utilities.formatDate(new Date(), "PST", "MM/dd/yyyy")
-    
-    const sortByDate = rawDataValues.filter((row) => {return Utilities.formatDate(row[2], "PST", "MM/dd/yyyy") === signOutDayPST})
-    const sortByTime = sortByDate.slice().sort((a, b) => b[2].getTime() - a[2].getTime())
-    const lastSignInIndex = sortByTime.findIndex(row => row[0] === name && row[1] === 'In')
-    
+    const rawDataValues = rawDataSheet
+        .getRange("A2:D" + rawDataSheet.getLastRow())
+        .getValues();
+    const signOutDayPST = Utilities.formatDate(new Date(), "PST", "MM/dd/yyyy");
+
+    const sortByDate = rawDataValues.filter((row) => {
+        return (
+            Utilities.formatDate(row[2], "PST", "MM/dd/yyyy") === signOutDayPST
+        );
+    });
+    const sortByTime = sortByDate
+        .slice()
+        .sort((a, b) => b[2].getTime() - a[2].getTime());
+    const lastSignInIndex = sortByTime.findIndex(
+        (row) => row[0] === name && row[1] === "In"
+    );
+
     const lastSignInTime = sortByTime[lastSignInIndex][2];
-    const signInDayPST = Utilities.formatDate(new Date(lastSignInTime), "PST", "MM/dd/yyyy")
+    const signInDayPST = Utilities.formatDate(
+        new Date(lastSignInTime),
+        "PST",
+        "MM/dd/yyyy"
+    );
 
     let duration = 0;
     if (signInDayPST === signOutDayPST) {
-        duration = new Date().getTime() - new Date(lastSignInTime).getTime()
+        duration = new Date().getTime() - new Date(lastSignInTime).getTime();
     }
-    return duration;
+    // Turn seconds into hours
+    return duration / 3600.0;
 }
