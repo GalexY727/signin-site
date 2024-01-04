@@ -240,8 +240,12 @@ function Home() {
 
   return (
     <div>
+      <div className="instructions">
+        Enter a name to sign in.
+        Then, click the name or enter it again to sign out.
+      </div>npm
       <div className="login student-side">
-        <h1 className="user-select-none">Student sign in</h1>
+        <h1 className="user-select-none">Students</h1>
         <form onSubmit={studentSubmit}>
           <AutoComplete
             onSubmit={studentSubmit}
@@ -251,7 +255,7 @@ function Home() {
         </form>
       </div>
       <div className="login parent-side">
-        <h1 className="user-select-none">Parent/Mentor sign in</h1>
+        <h1 className="user-select-none">Parent/Mentors</h1>
         <form onSubmit={parentSubmit}>
           <AutoComplete
             onSubmit={parentSubmit}
