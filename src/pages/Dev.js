@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Form } from "react-bootstrap";
 import AutoComplete from "../components/AutoComplete";
 import EventManager from "../components/EventManager";
@@ -9,37 +9,45 @@ function Dev() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [whitelist, setWhitelist] = useState([[], []]);
     let urlName = searchParams.get("name") || "";
-    let urlDate = searchParams.get("date") || new Date().toLocaleDateString([], {
+    let urlDate = searchParams.get("date") || new Date().toLocaleDateString('en-GB', {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
-        }).split("/").slice(1).join("-");
-    const [currentDate, setCurrentDate] = useState(urlDate);
+        }).split("/").reverse().join("-");
+    const [currentDate, setCurrentDate] = useState(urlDate || new Date().toLocaleDateString('en-GB', {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        }).split("/").reverse().join("-"));
     const [studentName, setStudentName] = useState(urlName || "");
-
-    setSearchParams({date: currentDate, name: studentName});
-
 
     const handleDateChange = (e) => {
         e.preventDefault();
         // only get the month and day of the date
         setCurrentDate(e.target.value);
-        // setSearchParams({ date: date, name: studentName});
+        // console.log(currentDate, studentName);
     }
 
+    useEffect(() => {
+        setSearchParams({ date: currentDate, name: studentName});
+        
+    }, [currentDate, studentName]);
+
+    // console.log(currentDate, studentName);
+
     const handleNameChange = (e) => {
-        const ref = e.current;
+        const value = e.current.value || studentName;
         // normalize the input by removing all non-alphanumeric characters,
         // trim spaces, and lowercase
-        const input = ref.value
+        const input = value
             .trim()
             .toLowerCase()
             .replace(/[^a-zA-Z0-9 ]/g, "");
         setTimeout(() => {
-            ref.value = input.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
-        }, 100);
+            e.current.value = input.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+        }, 300);
         setStudentName(input);
-        // setSearchParams({ date: currentDate, name: input });
+        // console.log(currentDate, studentName);
     };
 
     useEffect(() => {
@@ -75,7 +83,12 @@ function Dev() {
                     ]);
                 }
             });
-        }, []);
+        }, []);    
+
+    const getInitVal = () => {
+        console.log(studentName);
+        return (studentName ? studentName.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase()) : '') || ''
+    }
 
     return (
         <div>
@@ -83,7 +96,7 @@ function Dev() {
                 <div className="student">
                     <h1 style={{ color: "lightgray" }}>Student</h1>
                     <AutoComplete
-                        initVal={(studentName ? studentName.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase()) : '') || ''}
+                        initVal={getInitVal}
                         onSubmit={handleNameChange}
                         whitelist={whitelist[0]}
                     />
@@ -91,7 +104,7 @@ function Dev() {
 
                 <div className="date-input">
                     <h1 style={{ color: "lightgray" }}>Date</h1>
-                    <Form.Control value={new Date().getFullYear().toString() + '-' + currentDate} type="date" onChange={handleDateChange} />
+                        <Form.Control value={currentDate} type="date" onChange={handleDateChange} />
                 </div>
 
                 <div className="errors">

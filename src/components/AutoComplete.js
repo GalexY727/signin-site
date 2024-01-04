@@ -1,7 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import "./AutoComplete.css";
 
-const AutoComplete = ({ initVal='', whitelist, onSubmit }) => {
+const AutoComplete = ({initVal = "", whitelist, onSubmit }) => {
+    const fuzzysort = require("fuzzysort");
+
+    // Example: whitelist = ['Emiliano Mendez Rosas', 'John Doe', 'Jane Doe']
+    // Becomes: whitelist = [{first: 'Emiliano', rest: 'Mendez Rosas', fullName: 'Emiliano Mendez Rosas'}, ...]
+    // This is so we can give a first name priority in the fuzzy search
+    whitelist = whitelist.map((el) => {
+        let [first, ...rest] = el.split(/ (.+)/);
+        return { first: first, rest: rest.join(" "), fullName: el };
+    });
+
     const [value, setValue] = useState(initVal);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
@@ -65,18 +75,32 @@ const AutoComplete = ({ initVal='', whitelist, onSubmit }) => {
 
     const onChange = (e) => {
         setValue(e.target.value);
+
+        // Below is the integration of https://github.com/farzher/fuzzysort
+        // It first splits the
+
+        // Give priority to first name matches, then last name matches, then full name matches
+        const calculateScore = (a) => {
+            return (
+                (a[0] ? a[0].score : 0) +
+                (a[1] ? a[1].score - 10 : 0) +
+                (a[2] ? a[2].score : -1001)
+            );
+        };
+
+        // Only filter if the input is alphanumeric
         const filter = e.target.value.match(/[a-z0-9]/i)
-            ? whitelist
-                  .filter(
-                      (name) =>
-                          name
-                              .toLowerCase()
-                              .indexOf(e.target.value.toLowerCase()) > -1
-                  )
-                  .slice(0, 5) // Only take the first three suggestions
+            ? fuzzysort
+                .go(e.target.value, whitelist, {
+                    threshold: -1000,
+                    limit: 5,
+                    keys: ["first", "rest", "fullName"],
+                    scoreFn: calculateScore,
+                })
+                .map((el) => el.obj.fullName)
             : [];
 
-        setSuggestions(filter.slice(0, 5));
+        setSuggestions(filter);
         if (filter.length > 0) {
             setShowSuggestions(true);
             setActiveSuggestionIndex(0);
@@ -122,13 +146,15 @@ const AutoComplete = ({ initVal='', whitelist, onSubmit }) => {
     return (
         <div className="auto-complete">
             <div style={{ position: "relative" }}>
-                <input
-                    className="auto-complete-ghost"
-                    type="text"
-                    value={autoCompleteValue}
-                    placeholder=""
-                    disabled
-                />
+                {showSuggestions && (
+                    <input
+                        className="auto-complete-ghost"
+                        type="text"
+                        value={autoCompleteValue}
+                        placeholder=""
+                        disabled
+                    />
+                )}
                 <input
                     style={{ position: "relative", zIndex: 2 }}
                     type="text"
@@ -138,6 +164,7 @@ const AutoComplete = ({ initVal='', whitelist, onSubmit }) => {
                     onKeyDown={keyDownHandler}
                     placeholder="Enter your full name"
                     required="required"
+                    onClick={() => setShowSuggestions(value.trim().length > 0)}
                 />
             </div>
 

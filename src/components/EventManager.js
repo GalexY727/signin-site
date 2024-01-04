@@ -1,7 +1,7 @@
 import { InputGroup } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import "./EventManager.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function EventManager(name, date) {
     const [events, setEvents] = useState([]);
@@ -9,8 +9,8 @@ function EventManager(name, date) {
     const inputName = name;
     const inputDate = date;
 
-    console.log(inputName);
-    console.log(inputDate);
+    // console.log(inputName);
+    // console.log(inputDate);
 
     const [signedInState, setSignedInState] = useState(true);
     const [time, setTime] = useState(
@@ -50,6 +50,34 @@ function EventManager(name, date) {
         return `${hours}:${minutes}`;
     };
 
+    useEffect(() => {
+        fetch(process.env.REACT_APP_GET_SHEET_DATA, { method: "GET" })
+            .then((response) => response.json())
+            .then((json) => {
+                const data = json.valueRanges[3].values;
+                // console.log(data);
+                data.map((row) => {
+                    const name = row[0];
+                    const state = row[1];
+                    const date = row[2];
+
+                    let event = {
+                        name: name,
+                        state: state,
+                        date: date,
+                    };
+
+                    // console.log(inputName.name);
+                    console.log(
+                        "inputName: " + inputName.name.replace(/\s+/g, ""), 
+                        "event Name: " + event.name.toLowerCase().replace(/\s+/g, ""), 
+                        "bool: " + inputName.name.replace(/\s+/g, "") === event.name.toLowerCase().replace(/\s+/g, ""));
+                    // if (inputName === event.name.toLowerCase()) {
+                    //     setEvents([...events, event]);
+                    // }
+                });
+            });
+    }, []);
     const addNewEvent = () => {
 
         let newEvent = {
