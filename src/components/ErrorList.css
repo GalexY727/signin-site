@@ -1,0 +1,8 @@
+.error-list {
+    overflow: auto;
+    max-height: 85vh
+}
+
+.errors {
+    width: 90%;
+}

@@ -277,36 +277,34 @@ function Home() {
       <div className="px-3 text-center text-light students user-select-none">
         <h3>{isLoading || studentNames.length === 0 ? " " : "Students:"}</h3>
         <div className="names d-flex flex-wrap">
-          {
-            /* Loop over each group (Build, Design, etc) */
-            groupNames.map((groupName) => {
-              const namesInGroup = Object.entries(studentHashmap).filter(
-                ([name, group]) =>
-                  group === groupName && studentNames.includes(name)
-              );
-              return (
-                namesInGroup.length > 0 && (
-                  <div className="group-name" key={groupName}>
-                    <h4>{groupName}</h4>
-                    <div className="group">
-                      {namesInGroup.map(([name]) => (
-                        <div
-                          className="px-3 text-nowrap text-light name"
-                          key={name}
-                        >
-                          <span>
-                            {name === "Emily Hager" ? "🦒 " : ""}
-                            <span>{name}</span>
-                            {name === "Emily Hager" ? " 🦒" : ""}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+          {/* Loop over each group (Build, Design, etc) */}
+          {groupNames.map((groupName) => {
+            const namesInGroup = Object.entries(studentHashmap).filter(
+              ([name, group]) =>
+                group === groupName && studentNames.includes(name)
+            );
+            return (
+              namesInGroup.length > 0 && (
+                <div className="group-name" key={groupName}>
+                  <h4>{groupName}</h4>
+                  <div className="group">
+                    {namesInGroup.map(([name]) => (
+                      <div
+                        className="px-3 text-nowrap text-light name"
+                        key={name}
+                      >
+                        <span>
+                          {name === "Emily Hager" ? "🦒 " : ""}
+                          <span>{name}</span>
+                          {name === "Emily Hager" ? " 🦒" : ""}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                )
-              );
-            })
-          }
+                </div>
+              )
+            );
+          })}
         </div>
         <span className="loader"></span>
       </div>

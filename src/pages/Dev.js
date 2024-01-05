@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Form } from "react-bootstrap";
 import AutoComplete from "../components/AutoComplete";
 import EventManager from "../components/EventManager";
+import ErrorList from "../components/ErrorList";
 import "./Dev.css";
 import { useSearchParams } from "react-router-dom";
 
@@ -20,6 +21,7 @@ function Dev() {
         day: "2-digit",
         }).split("/").reverse().join("-"));
     const [studentName, setStudentName] = useState(urlName || "");
+    const [errors, setErrors] = useState([]);
 
     const handleDateChange = (e) => {
         e.preventDefault();
@@ -54,6 +56,10 @@ function Dev() {
         fetch(process.env.REACT_APP_GET_SHEET_DATA, { method: "GET" })
             .then((response) => response.json())
             .then((json) => {
+
+                console.log(json.valueRanges[0].values);
+                setErrors(json.valueRanges[0].values);
+
                 if (
                     json.valueRanges &&
                     json.valueRanges[2] &&
@@ -92,30 +98,36 @@ function Dev() {
 
     return (
         <div>
-            <div className="grid-container">
-                <div className="student">
-                    <h1 style={{ color: "lightgray" }}>Student</h1>
-                    <AutoComplete
-                        initVal={getInitVal}
-                        onSubmit={handleNameChange}
-                        whitelist={whitelist[0]}
-                    />
-                </div>
+            <span className="grid-container">
+                <div className="left-col">
+                    <div className="student-date">
+                        <span>
+                            <h1 style={{ color: "lightgray" }}>Student</h1>
+                            <AutoComplete
+                                initVal={getInitVal}
+                                onSubmit={handleNameChange}
+                                whitelist={whitelist[0]}
+                            />
+                        </span>
 
-                <div className="date-input">
-                    <h1 style={{ color: "lightgray" }}>Date</h1>
-                        <Form.Control value={currentDate} type="date" onChange={handleDateChange} />
+                        <span>
+                            <h1 style={{ color: "lightgray" }}>Date</h1>
+                                <Form.Control value={currentDate} type="date" onChange={handleDateChange} />
+                        </span>
+                    </div>
+
+                    <EventManager
+                            name={studentName}
+                            date={currentDate}
+                        />
                 </div>
 
                 <div className="errors">
-                    <h1 style={{ color: "lightgray" }}> Errors: </h1>
+                    <ErrorList 
+                        errors={errors}
+                    />
                 </div>
-
-                <EventManager
-                    name={studentName}
-                    date={currentDate}
-                />
-            </div>
+            </span>
         </div>
     );
 }
