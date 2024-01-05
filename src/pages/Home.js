@@ -182,7 +182,7 @@ function Home() {
     // trim spaces, and lowercase
     const input = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
 
-    if (parentNames.includes(input) || !parentWhitelist.includes(input)) {
+    if (!parentWhitelist.includes(input)) {
       deniedAnimation(ref);
       return;
     }
