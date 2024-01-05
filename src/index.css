@@ -17,3 +17,22 @@ body {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3E1D6D', endColorstr='#092756',GradientType=1 );
 }
 
+::-webkit-scrollbar {
+	width: 10px;
+}
+  
+::-webkit-scrollbar-track {
+	background: hsla(270, 5%, 80%, 0.418);
+	border-radius: 20px;
+}
+  
+::-webkit-scrollbar-thumb {
+	/* background: linear-gradient(rgba(34, 55, 63, 0.643), #a48bbda4);
+	 */
+	 background: hsl(0, 2%, 100%);
+	border-radius: 20px;
+}
+  
+::-webkit-scrollbar-thumb:hover {
+	background: #ffffff;
+}

@@ -13,8 +13,8 @@ function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const groupNames = [
     "Build",
-    "Design",
     "Programming",
+    "Design",
     "Marketing",
     "Leadership",
   ];
@@ -187,6 +187,16 @@ function Home() {
       return;
     }
 
+    if (parentNames.includes(input)) {
+      removalAnimation(ref);
+      makeData(input, "Out", false);
+      setParentNames((currentNames) =>
+        currentNames.filter((el) => el !== input)
+      );
+      inputRef.current.value = "";
+      return;
+    }
+
     acceptedAnimation(ref);
     let newParentNames = [...parentNames, input];
     setParentNames(newParentNames);
@@ -242,8 +252,8 @@ function Home() {
     <div>
       <div className="instructions">
         Enter a name to sign in.
-        Then, click the name or enter it again to sign out.
-      </div>npm
+        Then, enter it again to sign out.
+      </div>
       <div className="login student-side">
         <h1 className="user-select-none">Students</h1>
         <form onSubmit={studentSubmit}>
@@ -286,7 +296,7 @@ function Home() {
                         >
                           <span>
                             {name === "Emily Hager" ? "🦒 " : ""}
-                            <span onClick={removeName}>{name}</span>
+                            <span>{name}</span>
                             {name === "Emily Hager" ? " 🦒" : ""}
                           </span>
                         </div>
@@ -311,7 +321,7 @@ function Home() {
               key={name}
             >
               <span>
-                <span onClick={removeName}>{name}</span>
+                <span>{name}</span>
               </span>
             </div>
           ))}
