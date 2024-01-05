@@ -44,7 +44,7 @@ const AutoComplete = ({ whitelist , onSubmit }) => {
                 break;
             case 'Tab':
             case 'Enter':
-                setValue(suggestions[activeSuggestionIndex] || '');
+                setValue(value ? suggestions[activeSuggestionIndex] || '' : '');
                 setShowSuggestions(false);
                 // Send the ref and give the code time to access
                 // the value since it was just updated

@@ -2,6 +2,21 @@
 	--left: 65%;
 }
 
+.instructions {
+	position: absolute;
+	top: 0%;
+	padding-top: 1vh;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 100%;
+	text-align: center;
+	font-size: 1.5rem;
+	color: #ebf9ff;
+	text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+	letter-spacing: 1px;
+	text-align: center;
+}
+
 .login { 
 	position: absolute;
 	width:300px;
@@ -18,13 +33,13 @@
 
 .student-side {
 	top: 30%;
-	left: 33%;
+	left: 32.5%;
 	margin: -150px 0 0 -150px;
 }
 
 .parent-side {
 	top: 30%;
-	left: 79%;
+	left: 82%;
 	width: max-content;
 	margin: -150px 0 0 -150px;
 }
