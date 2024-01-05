@@ -18,6 +18,10 @@
     padding-top: 35px;
 }
 
+hr.solid {
+    border-top: 3px solid #bbb;
+}
+
 .delete-task {
     width: 32px;
     height: 32px;

@@ -103,11 +103,11 @@ function EventManager(name, date) {
 
     return (
         <div className="event-manager">
-            <h1 style={{ color: "lightgray" }}>Events: </h1>
+            <h1 style={{ color: "lightgray", textAlign:"center", paddingBottom:"0.5em"}}>Events: </h1>
 
             <button onClick={addNewEvent} className="submit-task" />
             <div style={{ overflow: "hidden" }}>
-                <InputGroup className="mb-3" style={{ placeItems: "flex-end" }}>
+                <InputGroup style={{ placeItems: "flex-end" }}>
                     <Form.Select
                         onChange={handleSelectChange}
                         style={{ maxWidth: "30%" }}
@@ -119,10 +119,12 @@ function EventManager(name, date) {
                     <Form.Control type="time" onChange={handleTimeChange} />
                 </InputGroup>
             </div>
+            
+            <hr className="solid" />
 
             <div
                 className="events"
-                style={{ maxHeight: "calc(100vh - 22em)", overflow: "auto" }}
+                style={{ maxHeight: "calc(85vh - 19em)", overflow: "auto" }}
             >
                 {events.map((event) => (
                     event &&
