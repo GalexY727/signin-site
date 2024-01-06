@@ -17,6 +17,24 @@
 	text-align: center;
 }
 
+.activity-state {
+    display: flex;
+    justify-content: center;
+}
+
+.top-bottom-borders {
+    border-top: 3px solid #bbb;
+    border-bottom: 3px solid #bbb;
+}
+
+.text-red {
+    color: red;
+}
+
+.text-green {
+    color:lime;
+}
+
 .login { 
 	position: absolute;
 	width:300px;
@@ -35,6 +53,7 @@
 	top: 30%;
 	left: 32.5%;
 	margin: -150px 0 0 -150px;
+    padding-top: 1em;
 }
 
 .parent-side {
@@ -42,6 +61,7 @@
 	left: 82%;
 	width: max-content;
 	margin: -150px 0 0 -150px;
+    padding-top: 1em;
 }
 
 input { 

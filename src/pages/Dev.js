@@ -121,7 +121,14 @@ function Dev() {
         fetch(process.env.REACT_APP_GET_SHEET_DATA, { method: "GET" })
             .then((response) => response.json())
             .then((json) => {
-                setErrors(json.valueRanges[0].values);
+
+                if (
+                    json.valueRanges &&
+                    json.valueRanges[4] &&
+                    json.valueRanges[4].values
+                ) {
+                    setErrors(json.valueRanges[4].values.map((row) => row[0]));
+                }
 
                 if (
                     json.valueRanges &&

@@ -44,6 +44,10 @@ const AutoComplete = ({initVal = "", whitelist, onSubmit }) => {
                 break;
             case 'Tab':
             case 'Enter':
+                if (value === '') {
+                    e.preventDefault();
+                    return;
+                }
                 setValue(suggestions[activeSuggestionIndex] || '');
                 setShowSuggestions(false);
                 // Send the ref and give the code time to access

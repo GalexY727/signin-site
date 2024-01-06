@@ -11,6 +11,7 @@ function Home() {
   const [parentWhitelist, setParentWhitelist] = useState([]);
   const [studentHashmap, setStudentHashmap] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [recentActivityState, setRecentActivityState] = useState("");
   const groupNames = [
     "Build",
     "Programming",
@@ -166,14 +167,16 @@ function Home() {
         currentNames.filter((el) => el !== input)
       );
       inputRef.current.value = "";
+      setRecentActivityState("Signed out " + input);
       return;
     }
-
+    
     acceptedAnimation(ref);
     let newStudentNames = [...studentNames, input];
     setStudentNames(newStudentNames);
     makeData(input, "In");
     inputRef.current.value = "";
+    setRecentActivityState("Signed in " + input);
   };
 
   const parentSubmit = (inputRef) => {
@@ -254,6 +257,17 @@ function Home() {
       <div className="instructions">
         Enter a name to sign in.
         Then, enter it again to sign out.
+        <div className={`activity-state 
+            ${recentActivityState.includes('in') 
+                ? 'text-green' 
+                : recentActivityState.includes('out') 
+                    ? 'text-red' 
+                    : ''} 
+            ${recentActivityState 
+                ? 'top-bottom-borders' 
+                : ''}`}>
+            {recentActivityState}
+        </div>
       </div>
       <div className="login student-side">
         <h1 className="user-select-none">Students</h1>
