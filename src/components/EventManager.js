@@ -11,7 +11,7 @@ function EventManager(input) {
             hour: "2-digit",
             minute: "2-digit",
         })
-        );
+    );
         
     const dateObject = new Date(input.date + ' ' + time);
 
@@ -54,39 +54,23 @@ function EventManager(input) {
     }
 
     useEffect(() => {
-        fetch(process.env.REACT_APP_GET_SHEET_DATA, { method: "GET" })
-            .then((response) => response.json())
-            .then((json) => {
-                const data = json.valueRanges[3].values;
-                // console.log(data);
-                const matchingEvents = data.map((row) => {
-                    const name = row[0];
-                    const state = row[1];
-                    const date = row[2].split(" ")[0];
-                    const time = row[2].split(" ")[1];
-
-                    let event = {
-                        name: name,
-                        state: state,
-                        time: time, 
-                        date: date,
-                    };
-
-                    console.log(event.name);
-                    console.log(input.name);
-
-                    if (event.name.toLowerCase() === input.name.toLowerCase()) {
-                        return event;
-                    }
-                });
-
-                setEvents(matchingEvents);
-                
+        const fetchData = async () => {
+            const data = await input.getEventData(input.name.toLowerCase(), dateObject);
+            const formattedData = data.map((event) => {
+                const [hour, minute] = event.time.split(':');
+                return {
+                    ...event,
+                    time: `${hour.padStart(2, '0')}:${minute}`
+                };
             });
-    }, []);
+            setEvents(formattedData);
+        };
+    
+        fetchData();
+    }, [input.name, input.date]);
 
     const addNewEvent = () => {
-        console.log(dateObject.toLocaleString([], {timeZone: "America/Los_Angeles"}).replace(",", ""));
+        // console.log(dateObject.toLocaleString([], {timeZone: "America/Los_Angeles"}).replace(",", ""));
         if (input.name === "") {
             alert("Please enter a name");
             return;
@@ -125,11 +109,13 @@ function EventManager(input) {
         
         let index = events.indexOf(e.target.value);
         console.log(index);
-        // makeData(
-        //     toTitleCase(input.name),
-        //     "Out",
-        //     input.date + " " + convertTime12to24(time)
-        // );
+        console.log(toTitleCase(input.name));
+        console.log(input.date + " " + convertTime12to24(time) + ":01")
+        makeData(
+            toTitleCase(input.name),
+            "Out",
+            input.date + " " + convertTime12to24(time) + ":01"
+        );
 
         // let newEvents = [...events];
         // newEvents.splice(index, 1);
@@ -163,7 +149,7 @@ function EventManager(input) {
                 className="events"
                 style={{ maxHeight: "calc(85vh - 19em)", overflow: "auto" }}
             >
-                {events.map((event, index) => (
+                {events && events.map((event, index) => (
                     event &&
                     <div className="event" key={index}>
                         <button className="delete-task" onClick={removeEvent} />
@@ -181,7 +167,7 @@ function EventManager(input) {
                                 </Form.Select>
                                 
                                 <Form.Control
-                                    defaultValue={convertTime12to24(event.time)}
+                                    defaultValue={event.time}
                                     type="time"
                                 />
                             </InputGroup>

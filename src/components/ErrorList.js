@@ -6,9 +6,11 @@ const ErrorList = ({ errors }) => {
         <div>
             <h1 style={{ color: "lightgray" }}>Errors: </h1>
             <div className="error-list">
-                {errors && errors.map((error, index) => (
-                    <input className="error" type="text" value={error} key={index} disabled="true" />
-                ))}
+                {errors && errors.map((error, index) => {
+                    if (error != "") {
+                        return (<input className="error" type="text" value={error} key={index} disabled />)
+                    }
+                })}
             </div>
         </div>
     );
