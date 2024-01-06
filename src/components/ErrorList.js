@@ -2,14 +2,12 @@ import { Form } from "react-bootstrap";
 import "./ErrorList.css";
 
 const ErrorList = ({ errors }) => {
-    console.log(errors);
-
     return (
         <div>
             <h1 style={{ color: "lightgray" }}>Errors: </h1>
             <div className="error-list">
-                {errors.map((error) => (
-                    <Form.Control className="errors" type="text" value={error} readOnly />
+                {errors && errors.map((error, index) => (
+                    <input className="error" type="text" value={error} key={index} disabled="true" />
                 ))}
             </div>
         </div>

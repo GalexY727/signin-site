@@ -76,7 +76,7 @@ function Dev() {
                         );
                     setWhitelist([
                         names,
-                        names.map((name) =>
+                        names || names.map((name) =>
                             (
                                 name
                                     .replace(/[^a-zA-Z0-9 ]/g, "")
@@ -118,7 +118,7 @@ function Dev() {
 
                     <EventManager
                             name={studentName}
-                            date={currentDate}
+                            date={currentDate.toString()}
                         />
                 </div>
 

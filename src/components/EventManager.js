@@ -1,24 +1,21 @@
 import { InputGroup } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import "./EventManager.css";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 
-function EventManager(name, date) {
+function EventManager(input) {
     const [events, setEvents] = useState([]);
-
-    const inputName = name;
-    const inputDate = date;
-
-    // console.log(inputName);
-    // console.log(inputDate);
-
     const [signedInState, setSignedInState] = useState(true);
     const [time, setTime] = useState(
         new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
         })
-    );
+        );
+        
+    const dateObject = new Date(input.date + ' ' + time);
+
+    // console.log(dateObject.toLocaleString([], {timeZone: "America/Los_Angeles"}));
 
     const handleSelectChange = (e) => {
         setSignedInState(e.target.value === "In");
@@ -50,6 +47,12 @@ function EventManager(name, date) {
         return `${hours}:${minutes}`;
     };
 
+    function toTitleCase(str) {
+        return str.replace(/\w\S*/g, function (txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        });
+    }
+
     useEffect(() => {
         fetch(process.env.REACT_APP_GET_SHEET_DATA, { method: "GET" })
             .then((response) => response.json())
@@ -69,10 +72,10 @@ function EventManager(name, date) {
                         date: date,
                     };
 
-                    // console.log(event);
-                    // console.log("Events: ", events);
+                    console.log(event.name);
+                    console.log(input.name);
 
-                    if (event.name.toLowerCase() === inputName.name.toLowerCase()) {
+                    if (event.name.toLowerCase() === input.name.toLowerCase()) {
                         return event;
                     }
                 });
@@ -80,23 +83,57 @@ function EventManager(name, date) {
                 setEvents(matchingEvents);
                 
             });
-    }, [ inputName ]);
+    }, []);
 
     const addNewEvent = () => {
+        console.log(dateObject.toLocaleString([], {timeZone: "America/Los_Angeles"}).replace(",", ""));
+        if (input.name === "") {
+            alert("Please enter a name");
+            return;
+        }
+        makeData(
+            toTitleCase(input.name),
+            signedInState ? "In" : "Out",
+            dateObject.toLocaleString([], {timeZone: "America/Los_Angeles"}).replace(",", "")
+        );
+    };
 
-        let newEvent = {
-            state: signedInState ? "In" : "Out",
-            time: time,
-        };
+    const makeData = async (name, inOrOut, timestamp) => {
+        const data = [
+            ["name", name],
+            ["timestamp", timestamp],
+            ["inOrOut", inOrOut],
+            ["studentOrParent", "Student"],
+        ];
+        postData(data);
+    };
 
-        setEvents([...events, newEvent]);
+    const postData = (data) => {
+        var formDataObject = new FormData();
+
+        data.forEach((element) => {
+            formDataObject.append(element[0], element[1]);
+        });
+
+        let url = process.env.REACT_APP_SHEET_POST_URL;
+        fetch(url, { method: "POST", body: formDataObject }).catch((err) =>
+            console.log(err)
+        );
     };
 
     const removeEvent = (e) => {
+        
         let index = events.indexOf(e.target.value);
-        let newEvents = [...events];
-        newEvents.splice(index, 1);
-        setEvents(newEvents);
+        console.log(index);
+        // makeData(
+        //     toTitleCase(input.name),
+        //     "Out",
+        //     input.date + " " + convertTime12to24(time)
+        // );
+
+        // let newEvents = [...events];
+        // newEvents.splice(index, 1);
+        // setEvents(newEvents);
 
         // console.log(newEvents);  
     };
@@ -126,9 +163,9 @@ function EventManager(name, date) {
                 className="events"
                 style={{ maxHeight: "calc(85vh - 19em)", overflow: "auto" }}
             >
-                {events.map((event) => (
+                {events.map((event, index) => (
                     event &&
-                    <div className="event">
+                    <div className="event" key={index}>
                         <button className="delete-task" onClick={removeEvent} />
                         <div style={{ overflow: "hidden" }}>
                             <InputGroup

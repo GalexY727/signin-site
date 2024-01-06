@@ -1,8 +1,11 @@
 .error-list {
     overflow: auto;
-    max-height: 85vh
+    max-height: 85vh;
 }
 
-.errors {
+.error {
     width: 90%;
+    vertical-align: middle;
+    cursor: default;
+    pointer-events: none;
 }
