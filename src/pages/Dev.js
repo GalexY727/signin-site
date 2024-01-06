@@ -3,7 +3,7 @@ import { Form } from "react-bootstrap";
 import AutoComplete from "../components/AutoComplete";
 import EventManager from "../components/EventManager";
 import ErrorList from "../components/ErrorList";
-import "./Dev.css";
+import "./Dev.css"; 
 import { useSearchParams } from "react-router-dom";
 
 function Dev() {
