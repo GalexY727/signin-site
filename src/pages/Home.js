@@ -232,6 +232,7 @@ function Home() {
       ["inOrOut", inOrOut],
       ["studentOrParent", isStudent ? "Student" : "Parent"],
     ];
+    console.log(name);
     postData(data, isStudent);
   };
 

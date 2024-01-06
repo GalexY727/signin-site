@@ -97,10 +97,6 @@ input:focus {
 	width: 100%;
 }
 
-.name:hover, .group:hover {
-	cursor: pointer;
-}
-
 .name {
 	padding-top: 1vh;
 	padding-bottom: 1vh;
@@ -128,13 +124,19 @@ input:focus {
   transform: translateY(-50%);
 }
 
+/* 
+.name:hover, .group:hover {
+	cursor: pointer;
+}
+
 .name span span:hover {
   color: rgba(255, 255, 255, 0.3);
 }
 
 .name span span:hover::before {
   width: 100%;
-}
+} 
+*/
 
 .students {
 	position:absolute;
