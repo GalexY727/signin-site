@@ -15,8 +15,6 @@ function EventManager(input) {
         
     const dateObject = new Date(input.date + ' ' + time);
 
-    // console.log(dateObject.toLocaleString([], {timeZone: "America/Los_Angeles"}));
-
     const handleSelectChange = (e) => {
         setSignedInState(e.target.value === "In");
     };
@@ -70,7 +68,6 @@ function EventManager(input) {
     }, [input.name, input.date]);
 
     const addNewEvent = () => {
-        // console.log(dateObject.toLocaleString([], {timeZone: "America/Los_Angeles"}).replace(",", ""));
         if (input.name === "") {
             alert("Please enter a name");
             return;
@@ -108,9 +105,6 @@ function EventManager(input) {
     const removeEvent = (e) => {
         
         let index = events.indexOf(e.target.value);
-        console.log(index);
-        console.log(toTitleCase(input.name));
-        console.log(input.date + " " + convertTime12to24(time) + ":01")
         makeData(
             toTitleCase(input.name),
             "Out",
@@ -121,7 +115,6 @@ function EventManager(input) {
         // newEvents.splice(index, 1);
         // setEvents(newEvents);
 
-        // console.log(newEvents);  
     };
 
     return (
@@ -169,6 +162,7 @@ function EventManager(input) {
                                 <Form.Control
                                     defaultValue={event.time}
                                     type="time"
+                                    readOnly
                                 />
                             </InputGroup>
                         </div>

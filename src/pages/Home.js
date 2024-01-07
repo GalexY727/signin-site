@@ -168,6 +168,9 @@ function Home() {
       );
       inputRef.current.value = "";
       setRecentActivityState("Signed out " + input);
+      setTimeout(() => {
+        setRecentActivityState('');
+      }, 5000);
       return;
     }
     
@@ -177,6 +180,9 @@ function Home() {
     makeData(input, "In");
     inputRef.current.value = "";
     setRecentActivityState("Signed in " + input);
+    setTimeout(() => {
+        setRecentActivityState('');
+    }, 5000);
   };
 
   const parentSubmit = (inputRef) => {
@@ -197,6 +203,10 @@ function Home() {
         currentNames.filter((el) => el !== input)
       );
       inputRef.current.value = "";
+      setRecentActivityState("Signed out " + input);
+      setTimeout(() => {
+        setRecentActivityState('');
+      }, 5000);
       return;
     }
 
@@ -205,6 +215,10 @@ function Home() {
     setParentNames(newParentNames);
     makeData(input, "In", false);
     inputRef.current.value = "";
+    setRecentActivityState("Signed in " + input);
+    setTimeout(() => {
+        setRecentActivityState('');
+    }, 5000);
   };
 
   const removeName = (e) => {
@@ -235,7 +249,6 @@ function Home() {
       ["inOrOut", inOrOut],
       ["studentOrParent", isStudent ? "Student" : "Parent"],
     ];
-    console.log(name);
     postData(data, isStudent);
   };
 
@@ -257,6 +270,9 @@ function Home() {
       <div className="instructions">
         Enter a name to sign in.
         Then, enter it again to sign out.
+        <h2 className="text-center text-red">
+            DON'T FORGET TO SIGN OUT!
+        </h2>
         <div className={`activity-state 
             ${recentActivityState.includes('in') 
                 ? 'text-green' 

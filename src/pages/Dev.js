@@ -8,7 +8,10 @@ import { useSearchParams } from "react-router-dom";
 
 function Dev() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const [whitelist, setWhitelist] = useState([[], []]);
+    const [studentWhitelist, setStudentWhitelist] = useState([]);
+    const [parentWhitelist, setParentWhitelist] = useState([]);
+    const [combinedWhitelist, setCombinedWhitelist] = useState([]);
+    
     let urlName = searchParams.get("name") || "";
     let urlDate =
         searchParams.get("date") ||
@@ -33,24 +36,22 @@ function Dev() {
                 .reverse()
                 .join("-")
     );
-    const [studentName, setStudentName] = useState(urlName || "");
+    const [searchName, setSearchName] = useState(urlName || "");
     const [errors, setErrors] = useState([]);
 
     const handleDateChange = (e) => {
         e.preventDefault();
         // only get the month and day of the date
         setCurrentDate(e.target.value);
-        // console.log(currentDate, studentName);
     };
 
     useEffect(() => {
-        setSearchParams({ date: currentDate, name: studentName });
-    }, [currentDate, studentName]);
+        setSearchParams({ date: currentDate, name: searchName });
+    }, [currentDate, searchName]);
 
-    // console.log(currentDate, studentName);
 
     const handleNameChange = (e) => {
-        const value = e.current.value || studentName;
+        const value = e.current.value || searchName;
         // normalize the input by removing all non-alphanumeric characters,
         // trim spaces, and lowercase
         const input = value
@@ -62,25 +63,30 @@ function Dev() {
                 letter.toUpperCase()
             );
         }, 300);
-        setStudentName(input);
-        // console.log(currentDate, studentName);
+        setSearchName(input);
     };
 
     const getEventData = async (inputName, inputDate) => {
+        if (!inputName) return [];
         const response = await fetch(process.env.REACT_APP_GET_SHEET_DATA, {
             method: "GET",
         });
+
         const json = await response.json();
+
+        let arrayIndex = studentWhitelist.map((name) => name.toLowerCase()).includes(inputName.toLowerCase()) ? 3 : 5;
+
         if (
             !(
                 json.valueRanges &&
-                json.valueRanges[3] &&
-                json.valueRanges[3].values
+                json.valueRanges[arrayIndex] &&
+                json.valueRanges[arrayIndex].values
             )
         ) {
+            console.log("no data!")
             return [];
         }
-        const data = json.valueRanges[3].values;
+        const data = json.valueRanges[arrayIndex].values;
 
         function areSameDay(date1, date2) {
             const newDate1 = new Date(date1);
@@ -95,6 +101,8 @@ function Dev() {
 
         return data
             .map((row) => {
+
+
                 const name = row[0];
                 const state = row[1];
                 const date = row[2].split(" ")[0];
@@ -135,36 +143,40 @@ function Dev() {
                     json.valueRanges[2] &&
                     json.valueRanges[2].values
                 ) {
-                    let names = json.valueRanges[2].values
+                    const studentNames = json.valueRanges[2].values
                         .map((name) => name[0])
                         .filter(
-                            (name) =>
+                            (name, index, self) =>
                                 name !== undefined &&
-                                name.replace(/[^a-zA-Z0-9 ]/g, "").trim() !== ""
+                                name.replace(/[^a-zA-Z0-9 ]/g, "").trim() !== "" &&
+                                self.indexOf(name) === index // Check if the current index is the first occurrence of the name
                         );
-                    setWhitelist([
-                        names,
-                        names ||
-                            names.map((name) =>
-                                (
-                                    name
-                                        .replace(/[^a-zA-Z0-9 ]/g, "")
-                                        .trim()
-                                        .split(" ")[0] +
-                                    " " +
-                                    name.split(" ")[1].charAt(0)
-                                ).toLowerCase()
-                            ),
-                    ]);
+                    setStudentWhitelist(studentNames);
+
+                    const parentNames = json.valueRanges[2].values
+                        .map((row) => {
+                            // Extract parent names from columns 3-8
+                            let parentNames = row
+                                .slice(2, 8)
+                                .filter((name) => name !== undefined);
+                            return parentNames;
+                        })
+                        .flat() // Flatten the array
+                        .filter(
+                            (name, index, self) =>
+                                name.replace(/[^a-zA-Z0-9 ]/g, "").trim() !== "" &&
+                                self.indexOf(name) === index // Check if the current index is the first occurrence of the name
+                        );
+                    setParentWhitelist(parentNames);
+                    setCombinedWhitelist([...studentNames, ...parentNames]);
                 }
             });
     }, []);
 
     const getInitVal = () => {
-        // console.log(studentName);
         return (
-            (studentName
-                ? studentName.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+            (searchName
+                ? searchName.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
                       letter.toUpperCase()
                   )
                 : "") || ""
@@ -181,7 +193,7 @@ function Dev() {
                             <AutoComplete
                                 initVal={getInitVal}
                                 onSubmit={handleNameChange}
-                                whitelist={whitelist[0]}
+                                whitelist={combinedWhitelist}
                             />
                         </span>
 
@@ -196,7 +208,7 @@ function Dev() {
                     </div>
 
                     <EventManager
-                        name={studentName}
+                        name={searchName}
                         date={currentDate.toString()}
                         getEventData={getEventData}
                     />
