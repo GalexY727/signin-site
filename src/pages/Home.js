@@ -3,7 +3,6 @@ import AutoComplete from "../components/AutoComplete";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
 import "../Loader.css";
-import { getData } from "../utils/firebaseAPI.tsx";
 import { db } from "../utils/firebaseConfig.js";
 import { get, onValue, ref, set } from "firebase/database";
 
@@ -36,6 +35,15 @@ function Home() {
 
     }
 
+    const setData = (isStudent = true, name, year, month, day, state, value) => {
+        // Adjust the path based on whether it's a student or not
+        const basePath = isStudent ? '/Students' : '/Parents';
+        const path = `${basePath}/${name}/${year}/${month}/${day}/${state}`;
+        
+        // Now, set the data using the modified path
+        set(ref(db, path), value);
+    }
+
     // function setData(name, year, month, day, state, value, isStudent = true) {
     //     // Adjust the path based on whether it's a student or not
     //     const basePath = isStudent ? '/Students' : '/NonStudents';
@@ -49,97 +57,69 @@ function Home() {
     useEffect(() => {
         const data = getData();
         data.then((data) => {
+            console.log(data);
             
             const studentNames = Object.keys(data.Students);
             const parentNames = Object.keys(data.Parents);
-            const studentWhitelist = Object.keys(data.Whitelist);
-            const studentHashmap = data.Whitelist;
 
             console.log(studentNames);
             console.log(parentNames);
 
-            // console.log(hi);
-
-            setStudentHashmap(studentHashmap);
-            setStudentWhitelist(studentWhitelist);
             setStudentNames(studentNames);
             setParentNames(parentNames);
 
-            setIsLoading(false);
-
         });
-                    // if (
-                    //     json.valueRanges &&
-                    //     json.valueRanges[0] &&
-                    //     json.valueRanges[0].values
-                    // ) {
-                    //     setStudentNames(
-                    //         json.valueRanges[0].values
-                    //             .map((name) => name[0])
-                    //             .filter(
-                    //                 (name) => name !== undefined && name !== ""
-                    //             )
-                    //     );
-                    // }
-                    // if (
-                    //     json.valueRanges &&
-                    //     json.valueRanges[1] &&
-                    //     json.valueRanges[1].values
-                    // ) {
-                    //     setParentNames(
-                    //         json.valueRanges[1].values
-                    //             .map((name) => name[0])
-                    //             .filter(
-                    //                 (name) => name !== undefined && name !== ""
-                    //             )
-                    //     );
-                    // }
-                    // // Set the studentWhitelist based upon col 5
-                    // if (
-                    //     json.valueRanges &&
-                    //     json.valueRanges[2] &&
-                    //     json.valueRanges[2].values
-                    // ) {
-                    //     setStudentWhitelist(
-                    //         json.valueRanges[2].values
-                    //             .map((name) => name[0])
-                    //             .filter(
-                    //                 (name) =>
-                    //                     name !== undefined &&
-                    //                     name
-                    //                         .replace(/[^a-zA-Z0-9 ]/g, "")
-                    //                         .trim() !== ""
-                    //             )
-                    //     );
-                    //     setStudentHashmap(
-                    //         json.valueRanges[2].values.reduce(
-                    //             (acc, [name, group]) => {
-                    //                 acc[name] = group;
-                    //                 return acc;
-                    //             },
-                    //             {}
-                    //         )
-                    //     );
-                    //     setParentWhitelist(
-                    //         json.valueRanges[2].values
-                    //             .map((row) => {
-                    //                 // Extract parent names from columns 3-8
-                    //                 let parentNames = row
-                    //                     .slice(2, 8)
-                    //                     .filter((name) => name !== undefined);
-                    //                 return parentNames;
-                    //             })
-                    //             .flat() // Flatten the array
-                    //             .filter(
-                    //                 (name) =>
-                    //                     name
-                    //                         .replace(/[^a-zA-Z0-9 ]/g, "")
-                    //                         .trim() !== ""
-                    //             )
-                    //     );
-                    // }
-                    // setIsLoading(false);
-                
+        setTimeout(() => {
+            fetch(process.env.REACT_APP_GET_SHEET_DATA, { method: "GET" })
+                .then((response) => response.json())
+                .then((json) => {
+                    // Set the studentWhitelist based upon col 5
+                    if (
+                        json.valueRanges &&
+                        json.valueRanges[2] &&
+                        json.valueRanges[2].values
+                    ) {
+                        setStudentWhitelist(
+                            json.valueRanges[2].values
+                                .map((name) => name[0])
+                                .filter(
+                                    (name) =>
+                                        name !== undefined &&
+                                        name
+                                            .replace(/[^a-zA-Z0-9 ]/g, "")
+                                            .trim() !== ""
+                                )
+                        );
+                        setStudentHashmap(
+                            json.valueRanges[2].values.reduce(
+                                (acc, [name, group]) => {
+                                    acc[name] = group;
+                                    return acc;
+                                },
+                                {}
+                            )
+                        );
+                        setParentWhitelist(
+                            json.valueRanges[2].values
+                                .map((row) => {
+                                    // Extract parent names from columns 3-8
+                                    let parentNames = row
+                                        .slice(2, 8)
+                                        .filter((name) => name !== undefined);
+                                    return parentNames;
+                                })
+                                .flat() // Flatten the array
+                                .filter(
+                                    (name) =>
+                                        name
+                                            .replace(/[^a-zA-Z0-9 ]/g, "")
+                                            .trim() !== ""
+                                )
+                        );
+                    }
+                    setIsLoading(false);
+                });
+        }, 3000);
     }, []);
 
     const acceptedAnimation = (ref) => {
@@ -230,7 +210,39 @@ function Home() {
 
         if (studentNames.includes(input)) {
             removalAnimation(ref);
-            makeData(input, "Out");
+            const date = new Date(Date.now());
+            const year = date.getFullYear();
+            const month = date.getMonth()+1;
+            const day = date.getDate();
+            const outTime = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+            
+            console.log(
+                input,
+                year,
+                month,
+                day,
+                "out",
+                outTime
+            );
+            const data = getData();
+            data.then((data) => {
+                // find the data for this student on this date to get the timestamp between the last in and this out
+                const studentData = data.Students[input];
+                const inTime = studentData[year][month][day]["in"];
+                console.log(inTime);
+                console.log(outTime);
+            });
+                
+            // setData(
+            //     true,               // isStudent
+            //     input,              // name
+            //     date.getFullYear(), // year
+            //     date.getMonth()+1,  // month
+            //     date.getDate(),     // day
+            //     "out",              // state
+            //     date                // value
+            // );
+            // makeData(input, "Out");
             setStudentNames((currentNames) =>
                 currentNames.filter((el) => el !== input)
             );
@@ -245,7 +257,15 @@ function Home() {
         acceptedAnimation(ref);
         let newStudentNames = [...studentNames, input];
         setStudentNames(newStudentNames);
-        makeData(input, "In");
+        console.log(
+            input,
+            date.getFullYear(),
+            date.getMonth()+1,
+            date.getDate(),
+            "in",
+            date
+        );
+        // makeData(input, "In");
         inputRef.current.value = "";
         setRecentActivityState("Signed in " + input);
         setTimeout(() => {
@@ -380,7 +400,6 @@ function Home() {
                 </h3>
                 <div className="names d-flex flex-wrap">
                     {/* Loop over each group (Build, Design, etc) */}
-                    
                     {groupNames.map((groupName) => {
                         const namesInGroup = Object.entries(
                             studentHashmap
