@@ -197,11 +197,42 @@ function Home() {
         );
     };
 
+    const getTimeDiff = (input, year, month, day, outTime) => {
+        let timeDiff;
+        const data = getData();
+        data.then((data) => {
+            // find the data for this student on this date to get the timestamp between the last in and this out
+            // we want to get the data right when we sign out, not the current reference, so we need to get the data from the database
+            // and then calculate the time difference between the last in and this out
+            const studentData = data.Students;
+            // We can't get the data from a name that doesn't exist, so we need to check for that
+            console.log(outTime)
+            try {
+                let inTime = studentData[input][year][month][day]["in"];
+                console.log(inTime);
+                console.log(outTime);
+                timeDiff = outTime - inTime;
+                console.log(timeDiff);
+            } catch (error) {
+                console.log(error);
+            }
+            console.log(studentData);
+        });
+        return timeDiff;
+    }
+
     const studentSubmit = (inputRef) => {
         const ref = inputRef.current;
         // normalize the input by removing all non-alphanumeric characters,
         // trim spaces, and lowercase
         const input = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
+
+        
+        const date = new Date(Date.now());
+        const year = date.getFullYear();
+        const month = date.getMonth()+1;
+        const day = date.getDate();
+        const outTime = date.getTime();
 
         if (!studentWhitelist.includes(input)) {
             deniedAnimation(ref);
@@ -210,29 +241,9 @@ function Home() {
 
         if (studentNames.includes(input)) {
             removalAnimation(ref);
-            const date = new Date(Date.now());
-            const year = date.getFullYear();
-            const month = date.getMonth()+1;
-            const day = date.getDate();
-            const outTime = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+            let timeDiff = getTimeDiff(input, year, month, day, outTime);
+            console.log(timeDiff);
             
-            console.log(
-                input,
-                year,
-                month,
-                day,
-                "out",
-                outTime
-            );
-            const data = getData();
-            data.then((data) => {
-                // find the data for this student on this date to get the timestamp between the last in and this out
-                const studentData = data.Students[input];
-                const inTime = studentData[year][month][day]["in"];
-                console.log(inTime);
-                console.log(outTime);
-            });
-                
             // setData(
             //     true,               // isStudent
             //     input,              // name
@@ -259,11 +270,11 @@ function Home() {
         setStudentNames(newStudentNames);
         console.log(
             input,
-            date.getFullYear(),
-            date.getMonth()+1,
-            date.getDate(),
+            year,
+            month,
+            day,
             "in",
-            date
+            outTime
         );
         // makeData(input, "In");
         inputRef.current.value = "";
