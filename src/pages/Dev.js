@@ -174,6 +174,7 @@ function Dev() {
     }, []);
 
     const getInitVal = () => {
+        // console.log(studentName);
         return (
             (searchName
                 ? searchName.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
