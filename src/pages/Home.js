@@ -35,11 +35,22 @@ function Home() {
 
     }
 
-    const setData = (isStudent = true, name, year, month, day, state, value) => {
+    const setData = async (isStudent = true, name, year, month, day, index, state, value) => {
         // Adjust the path based on whether it's a student or not
         const basePath = isStudent ? '/Students' : '/Parents';
-        const path = `${basePath}/${name}/${year}/${month}/${day}/${state}`;
         
+        let path = `${basePath}/${name}/${year}/${month}/${day}`;
+
+        console.log(index);
+        if (index != null || index != undefined) {
+            console.log(index);
+            path += `/${index}`;
+            console.log(path);
+        }
+
+        path += `/${state}`;
+        
+        console.log(path);
         // Now, set the data using the modified path
         set(ref(db, path), value);
     }
@@ -222,303 +233,27 @@ function Home() {
 
     const studentSubmit = (inputRef) => {
         const ref = inputRef.current;
-        // normalize the input by removing all non-alphanumeric characters,
-        // trim spaces, and lowercase
         const input = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
-
-        
-        const date = new Date(Date.now());
-        const year = date.getFullYear();
-        const month = date.getMonth()+1;
-        const day = date.getDate();
-        const outTime = date.getTime();
 
         if (!studentWhitelist.includes(input)) {
             deniedAnimation(ref);
             return;
         }
-
-        if (studentNames.includes(input)) {
-            removalAnimation(ref);
-            let timeDiff;
-            const data = getData();
-            // Get the time difference
-            data.then((data) => {
-                const studentData = data.Students;
-                try {
-                    let inTime = studentData[input][year][month][day]["in"];
-                    timeDiff = outTime - inTime;
-                    let diffInSeconds = Math.floor(timeDiff / 1000);
-                    let hours = Math.floor(diffInSeconds / 3600);
-                    diffInSeconds %= 3600;
-                    let minutes = Math.floor(diffInSeconds / 60);
-                    let seconds = diffInSeconds % 60;
-
-                    // Get the existing duration
-                    let existingDuration = studentData[input][year][month][day]["duration"];
-                    let [existingHours, existingMinutes, existingSeconds] = existingDuration.split(':').map(Number);
-
-                    // Add the calculated duration to the existing duration
-                    hours += existingHours;
-                    minutes += existingMinutes;
-                    seconds += existingSeconds;
-
-                    // If seconds or minutes are more than 60, carry over to minutes or hours
-                    if (seconds >= 60) {
-                        minutes += Math.floor(seconds / 60);
-                        seconds %= 60;
-                    }
-                    if (minutes >= 60) {
-                        hours += Math.floor(minutes / 60);
-                        minutes %= 60;
-                    }
-
-                    timeDiff = `${hours}:${minutes}:${seconds}`;
-                    return timeDiff;
-                } catch (error) {
-                    console.log(error);
-                }
-            }).then((timeDiff) => {
-                console.log(
-                    input,
-                    year,
-                    month,
-                    day,
-                    "duration",
-                    timeDiff
-                );
-                setData(
-                    true,               // isStudent
-                    input,              // name
-                    year,               // year
-                    month,              // month
-                    day,                // day
-                    "duration",         // state           
-                    timeDiff            // value
-                );
-            });
-            console.log(
-                input,
-                year,
-                month,
-                day,
-                "out",
-                outTime
-            );
-            setData(
-                true,               // isStudent
-                input,              // name
-                year,               // year
-                month,              // month
-                day,                // day
-                "out",              // state
-                outTime                // value
-            );
-            setData(
-                true,               // isStudent
-                input,              // name
-                year,               // year
-                month,              // month
-                day,                // day
-                "signedIn",              // state
-                false                // value
-            );
-            // makeData(input, "Out");
-            setStudentNames((currentNames) =>
-                currentNames.filter((el) => el !== input)
-            );
-            inputRef.current.value = "";
-            setRecentActivityState("Signed out " + input);
-            setTimeout(() => {
-                setRecentActivityState("");
-            }, 5000);
-            return;
-        }
-
-        acceptedAnimation(ref);
-        let newStudentNames = [...studentNames, input];
-        setStudentNames(newStudentNames);
-        console.log(
-            input,
-            year,
-            month,
-            day,
-            "in",
-            outTime
-        );
-        setData(
-            true,               // isStudent
-            input,              // name
-            year,               // year
-            month,              // month
-            day,                // day
-            "in",              // state
-            outTime            // value
-        );
-        setData(
-            true,               // isStudent
-            input,              // name
-            year,               // year
-            month,              // month
-            day,                // day
-            "signedIn",              // state
-            true                // value
-        );
-        // makeData(input, "In");
         inputRef.current.value = "";
-        setRecentActivityState("Signed in " + input);
-        setTimeout(() => {
-            setRecentActivityState("");
-        }, 5000);
+        compileData(input, ref, true);
     };
 
     const parentSubmit = (inputRef) => {
         const ref = inputRef.current;
-        // normalize the input by removing all non-alphanumeric characters,
-        // trim spaces, and lowercase
         const input = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
-        
-        const date = new Date(Date.now());
-        const year = date.getFullYear();
-        const month = date.getMonth()+1;
-        const day = date.getDate();
-        const outTime = date.getTime();
 
         if (!parentWhitelist.includes(input)) {
             deniedAnimation(ref);
             return;
         }
-
-        if (parentNames.includes(input)) {
-            removalAnimation(ref);
-            let timeDiff;
-            const data = getData();
-            // Get the time difference
-            data.then((data) => {
-                const parentData = data.Parents;
-                try {
-                    let inTime = parentData[input][year][month][day]["in"];
-                    timeDiff = outTime - inTime;
-                    let diffInSeconds = Math.floor(timeDiff / 1000);
-                    let hours = Math.floor(diffInSeconds / 3600);
-                    diffInSeconds %= 3600;
-                    let minutes = Math.floor(diffInSeconds / 60);
-                    let seconds = diffInSeconds % 60;
-
-                    // Get the existing duration
-                    let existingDuration = parentData[input][year][month][day]["duration"];
-                    let [existingHours, existingMinutes, existingSeconds] = existingDuration.split(':').map(Number);
-
-                    // Add the calculated duration to the existing duration
-                    hours += existingHours;
-                    minutes += existingMinutes;
-                    seconds += existingSeconds;
-
-                    // If seconds or minutes are more than 60, carry over to minutes or hours
-                    if (seconds >= 60) {
-                        minutes += Math.floor(seconds / 60);
-                        seconds %= 60;
-                    }
-                    if (minutes >= 60) {
-                        hours += Math.floor(minutes / 60);
-                        minutes %= 60;
-                    }
-
-                    timeDiff = `${hours}:${minutes}:${seconds}`;
-                    return timeDiff;
-                } catch (error) {
-                    console.log(error);
-                }
-            }).then((timeDiff) => {
-                console.log(
-                    input,
-                    year,
-                    month,
-                    day,
-                    "duration",
-                    timeDiff
-                );
-                setData(
-                    false,              // isStudent
-                    input,              // name
-                    year,               // year
-                    month,              // month
-                    day,                // day
-                    "duration",         // state           
-                    timeDiff            // value
-                );
-            });
-            console.log(
-                input,
-                year,
-                month,
-                day,
-                "out",
-                outTime
-            );
-            setData(
-                false,              // isStudent
-                input,              // name
-                year,               // year
-                month,              // month
-                day,                // day
-                "out",              // state
-                outTime             // value
-            );
-            setData(
-                false,              // isStudent
-                input,              // name
-                year,               // year
-                month,              // month
-                day,                // day
-                "signedIn",         // state
-                false               // value
-            );
-            setParentNames((currentNames) =>
-                currentNames.filter((el) => el !== input)
-            );
-            inputRef.current.value = "";
-            setRecentActivityState("Signed out " + input);
-            setTimeout(() => {
-                setRecentActivityState("");
-            }, 5000);
-            return;
-        }
-
-        acceptedAnimation(ref);
-        let newParentNames = [...parentNames, input];
-        setParentNames(newParentNames);
-        console.log(
-            input,
-            year,
-            month,
-            day,
-            "in",
-            outTime
-        );
-        setData(
-            false,              // isStudent
-            input,              // name
-            year,               // year
-            month,              // month
-            day,                // day
-            "in",               // state
-            outTime             // value
-        );
-        setData(
-            false,              // isStudent
-            input,              // name
-            year,               // year
-            month,              // month
-            day,                // day
-            "signedIn",         // state
-            true                // value
-        );
+        
         inputRef.current.value = "";
-        setRecentActivityState("Signed in " + input);
-        setTimeout(() => {
-            setRecentActivityState("");
-        }, 5000);
+        compileData(input, ref, false);
     };
 
     const removeName = (e) => {
@@ -671,6 +406,102 @@ function Home() {
             </div>
         </div>
     );
+
+    function compileData(name, ref, isStudent) {
+        const data = getData();
+
+        const date = new Date(Date.now());
+        const year = date.getFullYear();
+        const month = date.getMonth()+1;
+        const day = date.getDate();
+        const outTime = date.getTime();
+
+        data.then((data) => {
+            let studentData = isStudent ? data.Students : data.Parents;
+            let index = 0;
+            if (studentNames.includes(name)) {
+                removalAnimation(ref);
+                let timeDiff;
+                try {
+                    index = Object.keys(studentData[name][year][month][day]).length - 3;
+                    console.log(index);
+                    let inTime = studentData[name][year][month][day][index]["in"];
+                    timeDiff = outTime - inTime;
+                    let diffInSeconds = Math.floor(timeDiff / 1000);
+                    let hours = Math.floor(diffInSeconds / 3600);
+                    diffInSeconds %= 3600;
+                    let minutes = Math.floor(diffInSeconds / 60);
+                    let seconds = diffInSeconds % 60;
+
+                    let existingDuration = studentData[name][year][month][day]["duration"] || "0:0:0";
+                    let [existingHours, existingMinutes, existingSeconds] = existingDuration.split(':').map(Number);
+
+                    hours += existingHours;
+                    minutes += existingMinutes;
+                    seconds += existingSeconds;
+
+                    if (seconds >= 60) {
+                        minutes += Math.floor(seconds / 60);
+                        seconds %= 60;
+                    }
+                    if (minutes >= 60) {
+                        hours += Math.floor(minutes / 60);
+                        minutes %= 60;
+                    }
+
+                    console.log(hours, minutes, seconds);
+
+                    timeDiff = `${hours}:${minutes}:${seconds}`;
+                    console.log(timeDiff);
+                } catch (error) {
+                    console.log(error);
+                }
+
+                console.log(name, year, month, day, "duration", timeDiff);
+                setData(isStudent, name, year, month, day, null, "duration", timeDiff);
+                console.log(name, year, month, day, "out", outTime);
+                setData(isStudent, name, year, month, day, index, "out", outTime);
+                setData(isStudent, name, year, month, day, null, "signedIn", false);
+
+                setStudentNames((currentNames) => currentNames.filter((el) => el !== name));
+                setRecentActivityState("Signed out " + name);
+                setTimeout(() => {
+                    setRecentActivityState("");
+                }, 5000);
+            } else {
+                acceptedAnimation(ref);
+                let newStudentNames = [...studentNames, name];
+                setStudentNames(newStudentNames);
+                console.log(studentData, name, year, month, day, "in", outTime);
+                console.log(index);
+                // check if the duration exists
+                getData().then((data) => {
+                    const studentData = isStudent ? data.Students : data.Parents;
+                    try {
+                        let duration = studentData[name][year][month][day]["duration"];
+                        console.log(duration);
+                    } catch {
+                        console.log("duration doesn't exist");
+                        setData(isStudent, name, year, month, day, null, "duration", "0:0:0");
+                    }
+                });
+
+                try {
+                    index = Object.keys(studentData[name][year][month][day]).length - 2;
+                    console.log(index);
+                } catch {
+                    index = 0;
+                }
+                setData(isStudent, name, year, month, day, index, "in", outTime).then(() => {
+                    setData(isStudent, name, year, month, day, null, "signedIn", true);
+                });
+                setRecentActivityState("Signed in " + name);
+                setTimeout(() => {
+                    setRecentActivityState("");
+                }, 5000);
+            }
+        });
+    }
 }
 
 export default Home;
