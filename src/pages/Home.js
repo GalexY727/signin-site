@@ -394,7 +394,7 @@ function Home() {
                 });
 
                 try {
-                    index = Object.keys(studentData[name][year][month][day]).length - 2;
+                    index = Math.max(0, Object.keys(studentData[name][year][month][day]).length - 2);
                     console.log(index);
                 } catch {
                     index = 0;
