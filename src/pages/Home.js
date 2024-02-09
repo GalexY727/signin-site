@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
 import "../Loader.css";
 import { db } from "../utils/firebaseConfig.js";
-import { get, onValue, ref, set } from "firebase/database";
+import { get, ref, set } from "firebase/database";
 
 function Home() {
     const [studentNames, setStudentNames] = useState([]);
@@ -42,7 +42,7 @@ function Home() {
         let path = `${basePath}/${name}/${year}/${month}/${day}`;
 
         console.log(index);
-        if (index != null || index != undefined) {
+        if (index != null || index !== undefined) {
             console.log(index);
             path += `/${index}`;
             console.log(path);
@@ -216,21 +216,6 @@ function Home() {
         );
     };
 
-    const nameRemovalAnimation = (ref) => {
-        return ref.animate(
-            [
-                { transform: "scale(1)", color: "rgba(255,0,0,0.5)" },
-                { transform: "scale(1.02)" },
-                { transform: "scale(0.01)", color: "rgba(255,0,0,0.5)" },
-            ],
-            {
-                duration: 500,
-                easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-                fill: "both",
-            }
-        );
-    };
-
     const studentSubmit = (inputRef) => {
         const ref = inputRef.current;
         const input = ref.value.trim().replace(/[^a-zA-Z0-9 ]/g, "");
@@ -254,50 +239,6 @@ function Home() {
         
         inputRef.current.value = "";
         compileData(input, ref, false);
-    };
-
-    const removeName = (e) => {
-        e.preventDefault();
-        e.target.parentNode.style.pointerEvents = "none";
-        let name = e.target.textContent;
-        if (studentNames.includes(name)) {
-            makeData(name, "Out");
-            nameRemovalAnimation(e.target.parentNode).onfinish = () => {
-                setStudentNames((currentNames) =>
-                    currentNames.filter((el) => el !== name)
-                );
-            };
-        } else if (parentNames.includes(name)) {
-            makeData(name, "Out", false);
-            nameRemovalAnimation(e.target.parentNode).onfinish = () => {
-                setParentNames((currentNames) =>
-                    currentNames.filter((el) => el !== name)
-                );
-            };
-        }
-    };
-
-    const makeData = async (name, inOrOut, isStudent = true) => {
-        const data = [
-            ["name", name],
-            ["timestamp", Date.now() - 28800000], // Convert to PST from UTC
-            ["inOrOut", inOrOut],
-            ["studentOrParent", isStudent ? "Student" : "Parent"],
-        ];
-        postData(data, isStudent);
-    };
-
-    const postData = (data, isStudent) => {
-        var formDataObject = new FormData();
-
-        data.forEach((element) => {
-            formDataObject.append(element[0], element[1]);
-        });
-
-        let url = process.env.REACT_APP_SHEET_POST_URL;
-        fetch(url, { method: "POST", body: formDataObject }).catch((err) =>
-            console.log(err)
-        );
     };
 
     return (
