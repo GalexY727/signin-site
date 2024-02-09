@@ -44,7 +44,7 @@ function EventManager(input, isStudent = true) {
                 setSignedIn(false);
                 return;
             }
-            
+
             const eventDataWithoutDurationAndSignedIn = Object.entries(dayData)
                 .filter(([key]) => key !== 'duration' && key !== 'signedIn')
                 .map(([_, value]) => {
@@ -57,7 +57,7 @@ function EventManager(input, isStudent = true) {
                 })
                 .flat();
             setEvents(eventDataWithoutDurationAndSignedIn);
-            
+
             let hours = dayData?.duration.split(":")[0];
             let minutes = dayData?.duration.split(":")[1];
             // if mins is less than 10, add a 0 at end
@@ -94,7 +94,7 @@ function EventManager(input, isStudent = true) {
                     input.onSubmit(inputValue);
                 }
                 e.target.value = "";
-            break;
+                break;
             case 'Escape':
                 // in case the above case was just triggered,
                 // wait a bit before clearing the value
@@ -106,69 +106,77 @@ function EventManager(input, isStudent = true) {
         }
     }
 
+    const eventInputs = (
+        <div className="pair">
+            <input
+                type="text"
+                value={signedIn ? "Currently Signed In" : "Currently Signed Out"}
+                disabled
+            />
+            <input
+                type="text"
+                value={"Daily Hours: " + duration}
+                disabled
+            />
+            <input
+                type="text"
+                style={{ textAlign: "center", width: "100%" }}
+                placeholder="Add or Remove Hours..."
+                onKeyDown={keyDownHandler}
+            />
+        </div>
+    );
+
     return (
-        <div>
+        <div className="body">
             {events.length === 0 ? (
                 input.name === "" ? (
                     <h4 className="no-events">Please enter a name</h4>
                 ) : input.date === "" ? (
                     <h4 className="no-events">Please enter a date</h4>
-                ) : <h4 className="no-events">No events on record</h4>
+                ) :
+                    <div>
+                        {eventInputs}
+                        <h4 className="no-events">No events on record</h4>
+                    </div>
             ) : (
                 <div className="event-manager">
-                    <div className="pair">
-                        <input
-                            type="text"
-                            value={signedIn ? "Currently Signed In" : "Currently Signed Out"}
-                            disabled
-                        />
-                        <input
-                                type="text"
-                                value={"Daily Hours: " + duration}
-                                disabled 
-                        />
-                        <input
-                            type="text"
-                            style={{ textAlign: "center", width: "100%"}}
-                            placeholder="Add extra hours..."
-                            onKeyDown={keyDownHandler}
-                        />
-                    </div>
-                        <h1 style={{ paddingTop: "5%", color: "lightgray", textAlign:"center", paddingBottom:"0.5em"}}>Events: </h1>
-                        <hr className="solid" />
-                        <div
-                            className="events"
-                            style={{ maxHeight: "calc(85vh - 19em)", overflow: "auto" }}
-                        >
-                            {events && events.map((event, index) => (
-                                event && (
-                                    <div className="event" key={index}>
-                                        <div style={{ overflow: "hidden" }}>
-                                            <div className="mb-3" style={{ placeItems: "flex-end" }}>
-                                                <div style={{ display: "flex", width: "100%" }}>
-                                                    <div style={{ width: "25%" }}>
-                                                        <input
-                                                            style={{ verticalAlign: "middle", width: "100%" }}
-                                                            type="text"
-                                                            value={event.state}
-                                                            disabled
-                                                        />
-                                                    </div>
-                                                    <div style={{ width: "75%" }}>
-                                                        <input
-                                                            defaultValue={event.time}
-                                                            type="time"
-                                                            readOnly
-                                                            style={{ width: "100%" }}
-                                                        />
-                                                    </div>
+                    {eventInputs}
+                    <h1 style={{ paddingTop: "5%", color: "lightgray", textAlign: "center", paddingBottom: "0.5em" }}>Events: </h1>
+                    <hr className="solid" />
+                    <div
+                        className="events"
+                        style={{ maxHeight: "calc(85vh - 19em)", overflow: "auto" }}
+                    >
+                        {events && events.map((event, index) => (
+                            event && (
+                                <div className="event" key={index}>
+                                    <div style={{ overflow: "hidden" }}>
+                                        <div className="mb-3" style={{ placeItems: "flex-end" }}>
+                                            <div style={{ display: "flex", width: "100%" }}>
+                                                <div style={{ width: "25%" }}>
+                                                    <input
+                                                        style={{ verticalAlign: "middle", width: "100%" }}
+                                                        type="text"
+                                                        value={event.state}
+                                                        disabled
+                                                    />
+                                                </div>
+                                                <div style={{ width: "75%" }}>
+                                                    <input
+                                                        defaultValue={event.time}
+                                                        type="time"
+                                                        readOnly
+                                                        style={{ width: "100%" }}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                )
-                            ))}
-                        </div>
+                                </div>
+                            )
+                        ))}
+                    </div>
                 </div>
             )}
         </div>

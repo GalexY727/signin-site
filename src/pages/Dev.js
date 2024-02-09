@@ -34,10 +34,11 @@ function Dev() {
         const data = getData();
         
         data.then((data) => {
-            let studentData = true ? data.Students : data.Parents;
+            let titleCaseName = toTitleCase(searchName);
+            const isStudent = studentWhitelist.includes(titleCaseName);
+            let studentData = isStudent ? data.Students : data.Parents;
             try {
                 let duration = "0:0:0";
-                let titleCaseName = toTitleCase(searchName);
                 let [currentYear, currentMonth, currentDay] = searchDate.split("-");
                 if (currentDay.startsWith("0")) {
                     currentDay = currentDay.slice(1);
@@ -71,9 +72,7 @@ function Dev() {
                     month = month.slice(1);
                 }
 
-                setData(true, toTitleCase(searchName), year, month, day, null, "duration", duration);
-                // Re-render the EventManager component
-                
+                setData(isStudent, toTitleCase(searchName), year, month, day, null, "duration", duration);
             }
             catch (e) {
                 console.error(e);
@@ -203,7 +202,7 @@ function Dev() {
                 <div className="left-col">
                     <div className="student-date">
 
-                        <span>
+                        <span style={{width: "30%"}}>
                             <h1 style={{ color: "lightgray", textAlign: "center" }}>Name</h1>
                             <AutoComplete
                                 onSubmit={handleNameChange}
@@ -212,12 +211,12 @@ function Dev() {
                             />
                         </span>
 
-                        <span>
-                            <h1 style={{ color: "lightgray", textAlign: "center"  }}>Date</h1>
+                        <span style={{width: "30%"}}>
+                            <h1 style={{ color: "lightgray", textAlign: "center"}}>Date</h1>
                             <input 
                                 className="form-control" 
                                 value={searchDate} 
-                                type="date" 
+                                type="date"
                                 onChange={handleDateChange} 
                             />
                         </span>
