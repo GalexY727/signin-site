@@ -1,6 +1,9 @@
 .error-list {
     overflow: auto;
-    max-height: 85vh;
+    max-height: 85%;
+    position: absolute;
+    left: 50%;
+    width: 50%;
 }
 
 .error {
