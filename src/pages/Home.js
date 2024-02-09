@@ -42,11 +42,13 @@ function Home() {
             let studentNames = [];
             let parentNames = [];
 
+            const currentDate = new Date();
+            const year = currentDate.getFullYear().toString();
+            const month = (currentDate.getMonth() + 1).toString();
+            const day = currentDate.getDate().toString();
+
             Object.keys(studentData).forEach(name => {
-                const year = Object.keys(studentData[name])[0];
-                const month = Object.keys(studentData[name][year])[0];
-                const day = Object.keys(studentData[name][year][month])[0];
-                if (studentData[name][year][month][day].signedIn) {
+                if (studentData[name][year] && studentData[name][year][month] && studentData[name][year][month][day] && studentData[name][year][month][day].signedIn) {
                     console.log(`${name} is signed in.`);
                     studentNames.push(name);
                 } else {
@@ -55,10 +57,7 @@ function Home() {
             });
 
             Object.keys(parentData).forEach(name => {
-                const year = Object.keys(parentData[name])[0];
-                const month = Object.keys(parentData[name][year])[0];
-                const day = Object.keys(parentData[name][year][month])[0];
-                if (parentData[name][year][month][day].signedIn) {
+                if (parentData[name][year] && parentData[name][year][month] && parentData[name][year][month][day] && parentData[name][year][month][day].signedIn) {
                     console.log(`${name} is signed in.`);
                     parentNames.push(name);
                 } else {
@@ -293,9 +292,7 @@ function Home() {
             </div>
             <div className="px-3 text-center text-light mentors user-select-none">
                 <h3>
-                    {isLoading || parentNames.length === 0
-                        ? " "
-                        : "Parents/Mentors:"}
+                    {isLoading || parentNames.length === 0 ? " " : "Parents/Mentors:"}
                 </h3>
                 <div className="names group row">
                     {parentNames.map((name) => (
@@ -325,8 +322,10 @@ function Home() {
 
         data.then((data) => {
             let studentData = isStudent ? data.Students : data.Parents;
+            let groupNames = isStudent ? studentNames : parentNames;
+
             let index = 0;
-            if (studentNames.includes(name)) {
+            if (groupNames.includes(name)) {
                 removalAnimation(ref);
                 let timeDiff;
                 try {
@@ -369,16 +368,23 @@ function Home() {
                 console.log(name, year, month, day, "out", outTime);
                 setData(isStudent, name, year, month, day, index, "out", outTime);
                 setData(isStudent, name, year, month, day, null, "signedIn", false);
-
-                setStudentNames((currentNames) => currentNames.filter((el) => el !== name));
+                if (isStudent) {
+                    setStudentNames((currentNames) => currentNames.filter((el) => el !== name));
+                } else {
+                    setParentNames((currentNames) => currentNames.filter((el) => el !== name));
+                }
                 setRecentActivityState("Signed out " + name);
                 setTimeout(() => {
                     setRecentActivityState("");
                 }, 5000);
             } else {
                 acceptedAnimation(ref);
-                let newStudentNames = [...studentNames, name];
-                setStudentNames(newStudentNames);
+                let newGroupNames = [...groupNames, name];
+                if (isStudent) {
+                    setStudentNames(newGroupNames);
+                } else {
+                    setParentNames(newGroupNames);
+                }
                 console.log(studentData, name, year, month, day, "in", outTime);
                 console.log(index);
                 // check if the duration exists

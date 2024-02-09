@@ -40,7 +40,7 @@ function EventManager(input, isStudent = true) {
             // signedIn: false
             if (dayData === undefined) {
                 setEvents([]);
-                setDuration("0:0:0");
+                setDuration("0:00");
                 setSignedIn(false);
                 return;
             }
