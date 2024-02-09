@@ -1,50 +1,24 @@
-import { useState, useEffect, useRef } from "react";
-import { Form } from "react-bootstrap";
+import { useState, useEffect } from "react";
 import AutoComplete from "../components/AutoComplete";
 import EventManager from "../components/EventManager";
 import ErrorList from "../components/ErrorList";
 import "./Dev.css"; 
-import { useSearchParams } from "react-router-dom";
-import { db } from "../utils/firebaseConfig.js";
-import { get, onValue, ref, set } from "firebase/database";
+import { getData, setData } from "../utils/firebaseConfig.js";
 
 function Dev() {
-    const [searchParams, setSearchParams] = useSearchParams();
     const [studentWhitelist, setStudentWhitelist] = useState([]);
     const [parentWhitelist, setParentWhitelist] = useState([]);
     const [combinedWhitelist, setCombinedWhitelist] = useState([]);
     
-    let urlName = searchParams.get("name") || "";
-    let urlDate =
-        searchParams.get("date") ||
-        new Date()
-            .toLocaleDateString("en-GB", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-            })
-            .split("/")
-            .reverse()
-            .join("-");
-    const [currentDate, setCurrentDate] = useState(
-        urlDate ||
-            new Date()
-                .toLocaleDateString("en-GB", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                })
-                .split("/")
-                .reverse()
-                .join("-")
-    );
-    const [searchName, setSearchName] = useState(urlName || "");
+    let inputName = "";
+    let inputDate = new Date().toISOString().split("T")[0];
+    const [searchDate, setSearchDate] = useState(inputDate);
+    const [searchName, setSearchName] = useState(inputName);
     const [errors, setErrors] = useState([]);
 
     const handleDateChange = (e) => {
         e.preventDefault();
-        // only get the month and day of the date
-        setCurrentDate(e.target.value);
+        setSearchDate(e.target.value);
     };
 
     function toTitleCase(str) {
@@ -64,7 +38,7 @@ function Dev() {
             try {
                 let duration = "0:0:0";
                 let titleCaseName = toTitleCase(searchName);
-                let [currentYear, currentMonth, currentDay] = currentDate.split("-");
+                let [currentYear, currentMonth, currentDay] = searchDate.split("-");
                 if (currentDay.startsWith("0")) {
                     currentDay = currentDay.slice(1);
                 }
@@ -87,7 +61,7 @@ function Dev() {
                 hours = Math.min(12, Math.max(0, hours));
                 duration = `${hours}:${minutes}:${seconds}`;
 
-                let [year, month, day] = urlDate.split("-");
+                let [year, month, day] = searchDate.split("-");
 
                 // if the day starts with 0, remove it
                 if (day.startsWith("0")) {
@@ -97,7 +71,9 @@ function Dev() {
                     month = month.slice(1);
                 }
 
-                setData(true, toTitleCase(urlName), year, month, day, null, duration);
+                setData(true, toTitleCase(searchName), year, month, day, null, "duration", duration);
+                // Re-render the EventManager component
+                
             }
             catch (e) {
                 console.error(e);
@@ -105,56 +81,12 @@ function Dev() {
         });
     }
 
-    const getData = () => {
-        return get(ref(db, '/')).then((snapshot) => {
-            if (snapshot.exists()) {
-                return snapshot.val();
-            }
-        }).catch((error) => {
-            console.error(error);
-        }).then((data) => {
-            return data;
-        });
-    }
-
-    const setData = async (isStudent = true, name, year, month, day, index, value) => {
-        // Adjust the path based on whether it's a student or not
-        const basePath = isStudent ? '/Students' : '/Parents';
-        
-        let path = `${basePath}/${name}/${year}/${month}/${day}`;
-
-        console.log(index);
-        if (index != null || index != undefined) {
-            console.log(index);
-            path += `/${index}`;
-            console.log(path);
-        }
-
-        path += `/${"duration"}`;
-        
-        console.log(path);
-        // Now, set the data using the modified path
-        set(ref(db, path), value);
-    }
-
-    useEffect(() => {
-        setSearchParams({ date: currentDate, name: searchName });
-    }, [currentDate, searchName]);
-
-
     const handleNameChange = (e) => {
         const value = e.current.value || searchName;
-        // normalize the input by removing all non-alphanumeric characters,
-        // trim spaces, and lowercase
         const input = value
             .trim()
             .toLowerCase()
             .replace(/[^a-zA-Z0-9 ]/g, "");
-        setTimeout(() => {
-            e.current.value = input.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
-                letter.toUpperCase()
-            );
-        }, 300);
         setSearchName(input);
     };
 
@@ -193,8 +125,6 @@ function Dev() {
 
         return data
             .map((row) => {
-
-
                 const name = row[0];
                 const state = row[1];
                 const date = row[2].split(" ")[0];
@@ -212,9 +142,11 @@ function Dev() {
                     areSameDay(event.date, inputDate)
                 ) {
                     return event;
+                } else {
+                    return null;
                 }
             })
-            .filter((event) => event !== undefined);
+            .filter((event) => event !== null);
     };
 
     useEffect(() => {
@@ -265,16 +197,6 @@ function Dev() {
             });
     }, []);
 
-    const getInitVal = () => {
-        return (
-            (searchName
-                ? searchName.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
-                      letter.toUpperCase()
-                  )
-                : "") || ""
-        );
-    };
-
     return (
         <div>
             <span className="grid-container">
@@ -282,27 +204,28 @@ function Dev() {
                     <div className="student-date">
 
                         <span>
-                            <h1 style={{ color: "lightgray" }}>Student</h1>
+                            <h1 style={{ color: "lightgray", textAlign: "center" }}>Name</h1>
                             <AutoComplete
-                                initVal={getInitVal}
                                 onSubmit={handleNameChange}
                                 whitelist={combinedWhitelist}
+                                devSite={true}
                             />
                         </span>
 
                         <span>
-                            <h1 style={{ color: "lightgray" }}>Date</h1>
-                            <Form.Control
-                                value={currentDate}
-                                type="date"
-                                onChange={handleDateChange}
+                            <h1 style={{ color: "lightgray", textAlign: "center"  }}>Date</h1>
+                            <input 
+                                className="form-control" 
+                                value={searchDate} 
+                                type="date" 
+                                onChange={handleDateChange} 
                             />
                         </span>
                     </div>
 
                     <EventManager
                         name={searchName}
-                        date={currentDate.toString()}
+                        date={searchDate.toString()}
                         getEventData={getEventData}
                         onSubmit={handleDurationChange}
                     />

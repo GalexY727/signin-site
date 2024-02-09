@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { get, set, ref } from "firebase/database";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -20,4 +21,32 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-export const db = getDatabase(app);
+const db = getDatabase(app);
+
+export const getData = () => {
+    return get(ref(db, '/')).then((snapshot) => {
+        if (snapshot.exists()) {
+            return snapshot.val();
+        }
+    }).catch((error) => {
+        console.error(error);
+    }).then((data) => {
+        return data;
+    });
+}
+
+export const setData = async (isStudent = true, name, year, month, day, index, state, value) => {
+    // Adjust the path based on whether it's a student or not
+    const basePath = isStudent ? '/Students' : '/Parents';
+    
+    let path = `${basePath}/${name}/${year}/${month}/${day}`;
+
+    if (index != null) {
+        path += `/${index}`;
+    }
+
+    path += `/${state}`;
+    
+    // Now, set the data using the modified path
+    set(ref(db, path), value);
+}

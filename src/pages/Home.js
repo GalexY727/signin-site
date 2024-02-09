@@ -3,8 +3,7 @@ import AutoComplete from "../components/AutoComplete";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Home.css";
 import "../Loader.css";
-import { db } from "../utils/firebaseConfig.js";
-import { get, ref, set } from "firebase/database";
+import { getData, setData } from "../utils/firebaseConfig.js";
 
 function Home() {
     const [studentNames, setStudentNames] = useState([]);
@@ -21,39 +20,6 @@ function Home() {
         "Marketing",
         "Leadership",
     ];
-
-    const getData = () => {
-        return get(ref(db, '/')).then((snapshot) => {
-            if (snapshot.exists()) {
-                return snapshot.val();
-            }
-        }).catch((error) => {
-            console.error(error);
-        }).then((data) => {
-            return data;
-        });
-
-    }
-
-    const setData = async (isStudent = true, name, year, month, day, index, state, value) => {
-        // Adjust the path based on whether it's a student or not
-        const basePath = isStudent ? '/Students' : '/Parents';
-        
-        let path = `${basePath}/${name}/${year}/${month}/${day}`;
-
-        console.log(index);
-        if (index != null || index !== undefined) {
-            console.log(index);
-            path += `/${index}`;
-            console.log(path);
-        }
-
-        path += `/${state}`;
-        
-        console.log(path);
-        // Now, set the data using the modified path
-        set(ref(db, path), value);
-    }
 
     // function setData(name, year, month, day, state, value, isStudent = true) {
     //     // Adjust the path based on whether it's a student or not
