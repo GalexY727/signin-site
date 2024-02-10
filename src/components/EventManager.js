@@ -1,174 +1,184 @@
-import { InputGroup } from "react-bootstrap";
-import Form from "react-bootstrap/Form";
 import "./EventManager.css";
-import { useEffect, useReducer, useState } from "react";
+import "./ErrorList.css"
+import { useEffect, useState } from "react";
+import { getData } from "../utils/firebaseConfig.js";
 
-function EventManager(input) {
+function EventManager(input, isStudent = true) {
     const [events, setEvents] = useState([]);
-    const [signedInState, setSignedInState] = useState(true);
-    const [time, setTime] = useState(
-        new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-        })
-    );
-        
-    const dateObject = new Date(input.date + ' ' + time);
-
-    const handleSelectChange = (e) => {
-        setSignedInState(e.target.value === "In");
-    };
-    
-
-    const handleTimeChange = (e) => {
-        setTime(e.target.value);
-    };
-
-    const convertTime12to24 = (time12h) => {
-        // check if time is already in 24hour format
-        if ((!time12h.includes("AM") && !time12h.includes("PM"))) {
-            return time12h;
-        }
-
-        const [time, modifier] = time12h.split(" ");
-
-        let [hours, minutes] = time.split(":");
-
-        if (hours === "12") {
-            hours = "00";
-        }
-
-        if (modifier === "PM") {
-            hours = parseInt(hours, 10) + 12;
-        }
-
-        return `${hours}:${minutes}`;
-    };
-
-    function toTitleCase(str) {
-        return str.replace(/\w\S*/g, function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        });
-    }
+    const [duration, setDuration] = useState("0:0:0");
+    const [signedIn, setSignedIn] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
-            const data = await input.getEventData(input.name.toLowerCase(), dateObject);
-            const formattedData = data.map((event) => {
-                const [hour, minute] = event.time.split(':');
-                return {
-                    ...event,
-                    time: `${hour.padStart(2, '0')}:${minute}`
-                };
-            });
-            setEvents(formattedData);
-        };
-    
-        fetchData();
-    }, [input.name, input.date]);
+        const data = getData();
+        let name = input.name;
+        // Capitalize each beginning letter of the name
+        name = name.split(" ").map((word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(" ");
 
-    const addNewEvent = () => {
-        if (input.name === "") {
-            alert("Please enter a name");
-            return;
+        let [year, month, day] = input.date.split("-");
+
+        // If anyone of them starts with 0, remove it
+        if (day?.startsWith("0")) {
+            day = day.slice(1);
         }
-        makeData(
-            toTitleCase(input.name),
-            signedInState ? "In" : "Out",
-            dateObject.toLocaleString([], {timeZone: "America/Los_Angeles"}).replace(",", "")
-        );
-    };
+        if (month?.startsWith("0")) {
+            month = month.slice(1);
+        }
 
-    const makeData = async (name, inOrOut, timestamp) => {
-        const data = [
-            ["name", name],
-            ["timestamp", timestamp],
-            ["inOrOut", inOrOut],
-            ["studentOrParent", "Student"],
-        ];
-        postData(data);
-    };
+        data?.then((data) => {
+            const eventData = isStudent ? data?.Students : data?.Parents;
+            const nameData = eventData?.[name];
+            const yearData = nameData?.[year];
+            const monthData = yearData?.[month];
+            const dayData = monthData?.[day];
+            // The data looks like this:
+            // 0: { in: "8:00", out: "12:00" }
+            // 1: { in: "13:00", out: "17:00" }
+            // ...
+            // duration: "8:0:0"
+            // signedIn: false
+            if (dayData === undefined) {
+                setEvents([]);
+                setDuration("0:00");
+                setSignedIn(false);
+                return;
+            }
 
-    const postData = (data) => {
-        var formDataObject = new FormData();
+            const eventDataWithoutDurationAndSignedIn = Object.entries(dayData)
+                .filter(([key]) => key !== 'duration' && key !== 'signedIn')
+                .map(([_, value]) => {
+                    const inTime = new Date(value.in).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+                    const outTime = new Date(value.out).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+                    return [
+                        { state: 'In', time: inTime },
+                        { state: 'Out', time: outTime }
+                    ];
+                })
+                .flat();
+            setEvents(eventDataWithoutDurationAndSignedIn);
 
-        data.forEach((element) => {
-            formDataObject.append(element[0], element[1]);
+            let hours = dayData?.duration.split(":")[0];
+            let minutes = dayData?.duration.split(":")[1];
+            // if mins is less than 10, add a 0 at end
+            if (minutes.length === 1) {
+                minutes += "0";
+            }
+            setDuration(hours + ":" + minutes);
+            setSignedIn(dayData?.signedIn);
         });
+    }, [input.name, input.date, isStudent]);
 
-        let url = process.env.REACT_APP_SHEET_POST_URL;
-        fetch(url, { method: "POST", body: formDataObject }).catch((err) =>
-            console.log(err)
-        );
-    };
 
-    const removeEvent = (e) => {
-        
-        let index = events.indexOf(e.target.value);
-        makeData(
-            toTitleCase(input.name),
-            "Out",
-            input.date + " " + convertTime12to24(time) + ":01"
-        );
+    const keyDownHandler = (e) => {
+        const value = e.target.value;
+        switch (e.key) {
+            case 'Tab':
+            case 'Enter':
+                e.preventDefault();
+                if (value === '') {
+                    return;
+                }
+                const inputValue = value.trim();
+                // Make sure all of the data (trimmed) are numbers
+                if (!isNaN(inputValue)) {
+                    let hours = parseInt(duration.split(":")[0]) + parseInt(inputValue);
+                    // clamp hours from 0-12
+                    hours = Math.min(12, Math.max(0, hours));
+                    let minutes = duration.split(":")[1];
+                    // if mins is less than 10, add a 0 at end
+                    if (minutes.length === 1) {
+                        minutes += "0";
+                    }
+                    setDuration(hours + ":" + minutes);
+                    input.onSubmit(inputValue);
+                }
+                e.target.value = "";
+                break;
+            case 'Escape':
+                // in case the above case was just triggered,
+                // wait a bit before clearing the value
+                // so that it can be sent to onSubmit
+                e.target.value = "";
+                e.preventDefault();
+                break;
+            default:
+        }
+    }
 
-        // let newEvents = [...events];
-        // newEvents.splice(index, 1);
-        // setEvents(newEvents);
-
-    };
+    const eventInputs = (
+        <div className="pair">
+            <input
+                type="text"
+                value={signedIn ? "Currently Signed In" : "Currently Signed Out"}
+                disabled
+            />
+            <input
+                type="text"
+                value={"Daily Hours: " + duration}
+                disabled
+            />
+            <input
+                type="text"
+                style={{ textAlign: "center", width: "100%" }}
+                placeholder="Add or Remove Hours..."
+                onKeyDown={keyDownHandler}
+            />
+        </div>
+    );
 
     return (
-        <div className="event-manager">
-            <h1 style={{ color: "lightgray", textAlign:"center", paddingBottom:"0.5em"}}>Events: </h1>
-
-            <button onClick={addNewEvent} className="submit-task" />
-            <div style={{ overflow: "hidden" }}>
-                <InputGroup style={{ placeItems: "flex-end" }}>
-                    <Form.Select
-                        onChange={handleSelectChange}
-                        style={{ maxWidth: "30%" }}
-                    >
-                        <option>In</option>
-                        <option>Out</option>
-                    </Form.Select>
-
-                    <Form.Control type="time" onChange={handleTimeChange} />
-                </InputGroup>
-            </div>
-            
-            <hr className="solid" />
-
-            <div
-                className="events"
-                style={{ maxHeight: "calc(85vh - 19em)", overflow: "auto" }}
-            >
-                {events && events.map((event, index) => (
-                    event &&
-                    <div className="event" key={index}>
-                        <button className="delete-task" onClick={removeEvent} />
-                        <div style={{ overflow: "hidden" }}>
-                            <InputGroup
-                                className="mb-3"
-                                style={{ placeItems: "flex-end" }}
-                            >
-                                <Form.Select
-                                    defaultValue={event.state}
-                                    style={{ maxWidth: "30%" }}
-                                >
-                                    <option>In</option>
-                                    <option>Out</option>
-                                </Form.Select>
-                                
-                                <Form.Control
-                                    defaultValue={event.time}
-                                    type="time"
-                                    readOnly
-                                />
-                            </InputGroup>
-                        </div>
+        <div className="body">
+            {events.length === 0 ? (
+                input.name === "" ? (
+                    <h4 className="no-events">Please enter a name</h4>
+                ) : input.date === "" ? (
+                    <h4 className="no-events">Please enter a date</h4>
+                ) :
+                    <div>
+                        {eventInputs}
+                        <h4 className="no-events">No events on record</h4>
                     </div>
-                ))}
-            </div>
+            ) : (
+                <div className="event-manager">
+                    {eventInputs}
+                    <h1 style={{ paddingTop: "5%", color: "lightgray", textAlign: "center", paddingBottom: "0.5em" }}>Events: </h1>
+                    <hr className="solid" />
+                    <div
+                        className="events"
+                        style={{ maxHeight: "calc(85vh - 19em)", overflow: "auto" }}
+                    >
+                        {events && events.map((event, index) => (
+                            event && (
+                                <div className="event" key={index}>
+                                    <div style={{ overflow: "hidden" }}>
+                                        <div className="mb-3" style={{ placeItems: "flex-end" }}>
+                                            <div style={{ display: "flex", width: "100%" }}>
+                                                <div style={{ width: "25%" }}>
+                                                    <input
+                                                        style={{ verticalAlign: "middle", width: "100%" }}
+                                                        type="text"
+                                                        value={event.state}
+                                                        disabled
+                                                    />
+                                                </div>
+                                                <div style={{ width: "75%" }}>
+                                                    <input
+                                                        defaultValue={event.time}
+                                                        type="time"
+                                                        readOnly
+                                                        style={{ width: "100%" }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
