@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import "./AutoComplete.css";
 
-const AutoComplete = ({whitelist, onSubmit, devSite=false}) => {
+const AutoComplete = ({initVal = "", whitelist, onSubmit }) => {
     const fuzzysort = require('fuzzysort');
 
     // Example: whitelist = ['Emiliano Mendez Rosas', 'John Doe', 'Jane Doe']
@@ -12,7 +12,7 @@ const AutoComplete = ({whitelist, onSubmit, devSite=false}) => {
       return { first: first, rest: rest.join(" "), fullName: el };
     });
 
-    const [value, setValue] = useState('');
+    const [value, setValue] = useState(initVal);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
@@ -55,10 +55,6 @@ const AutoComplete = ({whitelist, onSubmit, devSite=false}) => {
                 setTimeout(() => {
                     onSubmit(autoCompleteRef);
                 }, 10);
-                if (devSite) {
-                    break;
-                }
-            // eslint-disable-next-line no-fallthrough
             case 'Escape':
                 // in case the above case was just triggered,
                 // wait a bit before clearing the value
@@ -119,9 +115,6 @@ const AutoComplete = ({whitelist, onSubmit, devSite=false}) => {
         // the value since it was just updated
         setTimeout(() => {
             onSubmit(autoCompleteRef);
-            if (devSite) {
-                return;
-            }
             setTimeout(() => {
                 setValue('');
                 setAutoCompleteValue('');
